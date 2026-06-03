@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Vortex</RootNamespace>
+    <AssemblyName>Vortex.IID</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="GodotSharp" Version="4.6.3" />
+    <PackageReference Include="Godot.SourceGenerators" Version="4.6.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Vortex.Core/Vortex.Core.csproj" />
+  </ItemGroup>
+</Project>

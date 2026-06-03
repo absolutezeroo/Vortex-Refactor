@@ -1,0 +1,129 @@
+// @see WIN63-202407091256-704579380-Source-main/habbo/avatar/AvatarAssetDownloadLibrary.as
+
+using Vortex.Core.Assets;
+using Vortex.Core.Assets.Loaders;
+using Vortex.Core.Runtime.Events;
+
+namespace Vortex.Habbo.Avatar;
+
+/// @see WIN63-202407091256-704579380-Source-main/habbo/avatar/AvatarAssetDownloadLibrary.as
+public class AvatarAssetDownloadLibrary
+{
+    private static readonly int STATE_IDLE = 0;
+    private static readonly int STATE_DOWNLOADING = 1;
+    private static readonly int STATE_READY = 2;
+
+    private int _state;
+    private readonly string _downloadUrl;
+    private readonly IAssetLibrary _assets;
+
+    public EventDispatcherWrapper Events { get; } = new();
+
+    /// @see AvatarAssetDownloadLibrary.as::AvatarAssetDownloadLibrary
+    public AvatarAssetDownloadLibrary(string libraryName, string revision, string downloadUrl, IAssetLibrary assets, string urlTemplate)
+    {
+        _state = STATE_IDLE;
+        _assets = assets;
+        LibraryName = libraryName;
+        _downloadUrl = (downloadUrl + urlTemplate)
+                       .Replace("%libname%", libraryName)
+                       .Replace("%revision%", revision);
+
+        // Check if library already loaded
+        if (assets is not AssetLibraryCollection collection)
+        {
+            return;
+        }
+
+        IAssetLibrary? existing = collection.GetAssetLibraryByUrl(libraryName + ".swf");
+
+        if (existing != null)
+        {
+            _state = STATE_READY;
+        }
+    }
+
+    /// @see AvatarAssetDownloadLibrary.as::dispose
+    public void Dispose()
+    {
+        Events.Dispose();
+    }
+
+    /// @see AvatarAssetDownloadLibrary.as::startDownloading
+    /// Godot adaptation: loads .vortex bundle from local path instead of HTTP download.
+    public void StartDownloading()
+    {
+        _state = STATE_DOWNLOADING;
+
+        try
+        {
+            VortexBundleFileLoader loader = new(VortexBundleAsset.MIME_TYPE, _downloadUrl);
+
+            if (loader.Content == null)
+            {
+                Logger.Warn("[AvatarAssetDownloadLibrary] Bundle not found: " + _downloadUrl + ", marking ready (graceful)");
+                loader.Dispose();
+                _state = STATE_READY;
+                Events.DispatchEvent("complete");
+                return;
+            }
+
+            AssetLibrary lib = new(LibraryName);
+            VortexBundleAsset bundleAsset = new(url: LibraryName);
+            bundleAsset.SetUnknownContent(loader.Content);
+            bundleAsset.PopulateLibrary(lib);
+
+            Logger.Info($"[AvatarAssetDownloadLibrary] Loaded '{LibraryName}': {lib.NumAssets} assets");
+
+            if (_assets is AssetLibraryCollection collection)
+            {
+                collection.AddAssetLibrary(lib);
+            }
+
+            loader.Dispose();
+        }
+        catch (System.Exception e)
+        {
+            Logger.Warn("[AvatarAssetDownloadLibrary] Failed to load bundle " + _downloadUrl + ": " + e.Message);
+        }
+
+        _state = STATE_READY;
+        Events.DispatchEvent("complete");
+    }
+
+    /// @see AvatarAssetDownloadLibrary.as::get libraryName
+    public string LibraryName { get; }
+
+    /// @see AvatarAssetDownloadLibrary.as::get isReady
+    public bool IsReady => _state == STATE_READY;
+
+    /// @see AvatarAssetDownloadLibrary.as::purge
+    public void Purge()
+    {
+        if (_assets is not AssetLibraryCollection collection)
+        {
+            return;
+        }
+
+        IAssetLibrary? lib = collection.GetAssetLibraryByUrl(_downloadUrl);
+
+        if (lib == null)
+        {
+            return;
+        }
+
+        collection.RemoveAssetLibrary(lib);
+        lib.Dispose();
+
+        _state = STATE_IDLE;
+    }
+
+    /// @see AvatarAssetDownloadLibrary.as::get isMandatory
+    public bool IsMandatory { get; set; }
+
+    /// @see AvatarAssetDownloadLibrary.as::toString
+    public override string ToString()
+    {
+        return LibraryName + (IsReady ? "[x]" : "[ ]");
+    }
+}

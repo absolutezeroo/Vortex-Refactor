@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<manifest>
+
+	<component class="bootstrap.HabboTrackingBootstrap" version="0.0">
+		<interface iid="iid.IIDHabboTracking" />
+	</component>
+	
+</manifest>

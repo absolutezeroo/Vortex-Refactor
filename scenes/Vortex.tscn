@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://bsla864675dxe"]
+
+[ext_resource type="Script" uid="uid://n34j04ie4f50" path="res://src/Vortex/src/HabboAir.cs" id="1_40bdy"]
+
+[node name="HabboAir" type="Control" unique_id=203129651]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_40bdy")

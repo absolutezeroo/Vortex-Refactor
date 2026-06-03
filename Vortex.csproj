@@ -1,0 +1,26 @@
+<Project Sdk="Godot.NET.Sdk/4.6.3">
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <EnableDynamicLoading>true</EnableDynamicLoading>
+        <RootNamespace>Vortex</RootNamespace>
+        <AssemblyName>Vortex</AssemblyName>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <!-- Source files live in src/Vortex.Launcher/src/ -->
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="src/Vortex.Launcher/src/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="src/Vortex.Core/Vortex.Core.csproj" />
+        <ProjectReference Include="src/Vortex.IID/Vortex.IID.csproj" />
+        <ProjectReference Include="src/Vortex.Habbo/Vortex.Habbo.csproj" />
+        <ProjectReference Include="src/Vortex.Bootstrap/Vortex.Bootstrap.csproj" />
+        <ProjectReference Include="src/Vortex.Login/Vortex.Login.csproj" />
+        <ProjectReference Include="src/Vortex.OnBoardingHcUI/Vortex.OnBoardingHcUI.csproj" />
+        <ProjectReference Include="src/Vortex.Splash/Vortex.Splash.csproj" />
+        <ProjectReference Include="src/Vortex.Room/Vortex.Room.csproj" />
+        <ProjectReference Include="tools/Vortex.Bundle/Vortex.Bundle.csproj" />
+    </ItemGroup>
+</Project>

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+        <RootNamespace>Vortex.Bundle.Converter</RootNamespace>
+        <AssemblyName>Vortex.Bundle.Converter</AssemblyName>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Vortex.Bundle\Vortex.Bundle.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
+        <PackageReference Include="SharpCompress" Version="0.38.0" />
+    </ItemGroup>
+</Project>

@@ -1,0 +1,8 @@
+# External variables fallback loaded by HabboConfigurationManager.
+client.starting=1
+client.starting.revolving=1
+new.user.flow.enabled=0
+new.user.onboarding.hc.flow.enabled=0
+new.user.onboarding.show.hc.items=0
+new.user.flow.page=hotel
+configuration.readonly=false

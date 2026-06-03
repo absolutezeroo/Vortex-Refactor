@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<manifest>
+
+	<component class="bootstrap.HabboCommunicationManagerBootstrap" version="0.0">
+		<interface iid="iid.IIDHabboCommunicationManager" />
+		<assets>
+		</assets>
+	</component>
+	
+</manifest>

@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://d2rvjcrwvyyud"]
+
+[ext_resource type="Script" uid="uid://c8gk2v144km4h" path="res://src/Vortex.Launcher/src/WindowSystemCreation.cs" id="1_hox8w"]
+
+[node name="WindowSystemCreation" type="Control" unique_id=1158437030]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_hox8w")

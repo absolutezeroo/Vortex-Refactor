@@ -1,0 +1,91 @@
+# ------------------------------------------------------------
+# Godot 4+
+# ------------------------------------------------------------
+.godot/
+.mono/
+
+# Godot export build folders/files
+android/
+build/
+exports/
+export/
+addons/
+
+# Godot crash dumps
+mono_crash.*.json
+godot_crash.*.txt
+
+# ------------------------------------------------------------
+# C# / .NET build artifacts
+# ------------------------------------------------------------
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Aa]rtifacts/
+TestResults/
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+.dotnet/
+
+# User-specific .NET/Visual Studio files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+.dotnet_home/
+
+# ------------------------------------------------------------
+# IDE / Editor
+# ------------------------------------------------------------
+.idea/
+.idea/**
+*.sln.iml
+
+.vscode/
+!.vscode/extensions.json
+
+# Visual Studio cache
+.vs/
+*.VC.db
+*.VC.opendb
+
+# Git
+.git/
+
+# AI
+.claude/
+.codex_tmp_home/
+
+# ------------------------------------------------------------
+# Logs / temp / local cache
+# ------------------------------------------------------------
+*.log
+*.tmp
+*.temp
+*.cache
+*.pid
+*.seed
+*.stackdump
+*.swp
+*.swo
+*~
+
+# ------------------------------------------------------------
+# OS files
+# ------------------------------------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ------------------------------------------------------------
+# Local Habbo Flash source dumps
+# ------------------------------------------------------------
+sources/
+*.png
+*.png.import

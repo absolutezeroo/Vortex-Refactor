@@ -1,5 +1,7 @@
 // @see habbo/window/widgets/IRoomPreviewerWidget.as
 
+using Godot;
+
 namespace Vortex.Habbo.Window.Widgets;
 
 /// @see habbo/window/widgets/IRoomPreviewerWidget.as
@@ -21,5 +23,5 @@ public interface IRoomPreviewerWidget
     int Zoom { get; set; }
 
     /// @see habbo/window/widgets/IRoomPreviewerWidget.as::showPreview
-    void ShowPreview();
+    void ShowPreview(Image bitmapData);
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using Vortex.Core.Communication.Connection;
@@ -7,19 +8,27 @@ using Vortex.Core.Communication.Messages;
 using Vortex.Room.Object;
 using Vortex.Room.Utils;
 
+using Vortex.Habbo.Communication.Messages.Incoming.Handshake;
+using Vortex.Habbo.Communication.Messages.Incoming.Help;
 using Vortex.Habbo.Communication.Messages.Incoming.Room.Action;
 using Vortex.Habbo.Communication.Messages.Incoming.Room.Chat;
 using Vortex.Habbo.Communication.Messages.Incoming.Room.Engine;
 using Vortex.Habbo.Communication.Messages.Incoming.Room.Furniture;
 using Vortex.Habbo.Communication.Messages.Incoming.Room.Layout;
+using Vortex.Habbo.Communication.Messages.Incoming.Room.Pets;
 using Vortex.Habbo.Communication.Messages.Incoming.Room.Session;
+using Vortex.Habbo.Communication.Messages.Incoming.Users;
 using Vortex.Habbo.Communication.Messages.Outgoing.Room.Engine;
+using Vortex.Habbo.Communication.Messages.Parser.Handshake;
+using Vortex.Habbo.Communication.Messages.Parser.Help;
 using Vortex.Habbo.Communication.Messages.Parser.Room.Action;
 using Vortex.Habbo.Communication.Messages.Parser.Room.Chat;
 using Vortex.Habbo.Communication.Messages.Parser.Room.Engine;
 using Vortex.Habbo.Communication.Messages.Parser.Room.Furniture;
 using Vortex.Habbo.Communication.Messages.Parser.Room.Layout;
+using Vortex.Habbo.Communication.Messages.Parser.Room.Pets;
 using Vortex.Habbo.Communication.Messages.Parser.Room.Session;
+using Vortex.Habbo.Communication.Messages.Parser.Users;
 using Vortex.Habbo.Room.Object;
 using Vortex.Habbo.Room.Object.Data;
 using Vortex.Habbo.Room.Utils;
@@ -92,6 +101,13 @@ public class RoomMessageHandler : IDisposable
     private SpecialRoomEffectMessageEvent? _specialRoomEffectEvent;
     private BuildersClubPlacementWarningMessageEvent? _buildersClubPlacementWarningEvent;
     private ObjectRemoveConfirmMessageEvent? _objectRemoveConfirmEvent;
+    private UserObjectEvent? _userObjectEvent;
+    private PetExperienceEvent? _petExperienceEvent;
+    private PetFigureUpdateEvent? _petFigureUpdateEvent;
+    private IgnoreResultMessageEvent? _ignoreResultEvent;
+    private GuideSessionStartedMessageEvent? _guideSessionStartedEvent;
+    private GuideSessionEndedMessageEvent? _guideSessionEndedEvent;
+    private GuideSessionErrorMessageEvent? _guideSessionErrorEvent;
 
     /// @see com.sulake.habbo.room.RoomMessageHandler::RoomMessageHandler
     public RoomMessageHandler(IRoomCreator roomCreator)
@@ -120,7 +136,8 @@ public class RoomMessageHandler : IDisposable
                 return;
             }
 
-            // TODO: _ownUserEvent = new UserObjectEvent(OnOwnUserEvent) — unported
+            _userObjectEvent = new UserObjectEvent(OnOwnUserEvent);
+            _connection.AddMessageEvent(_userObjectEvent);
 
             _roomReadyEvent = new RoomReadyMessageEvent(OnRoomReady);
             _connection.AddMessageEvent(_roomReadyEvent);
@@ -246,8 +263,11 @@ public class RoomMessageHandler : IDisposable
             _oneWayDoorStatusEvent = new OneWayDoorStatusMessageEvent(OnOneWayDoorStatus);
             _connection.AddMessageEvent(_oneWayDoorStatusEvent);
 
-            // TODO: PetExperienceEvent — unported
-            // TODO: PetFigureUpdateEvent — unported
+            _petExperienceEvent = new PetExperienceEvent(OnPetExperience);
+            _connection.AddMessageEvent(_petExperienceEvent);
+
+            _petFigureUpdateEvent = new PetFigureUpdateEvent(OnPetFigureUpdate);
+            _connection.AddMessageEvent(_petFigureUpdateEvent);
 
             _youArePlayingGameEvent = new YouArePlayingGameMessageEvent(OnPlayingGame);
             _connection.AddMessageEvent(_youArePlayingGameEvent);
@@ -261,10 +281,17 @@ public class RoomMessageHandler : IDisposable
             _handitemConfigurationEvent = new HanditemConfigurationMessageEvent(OnHanditemConfiguration);
             _connection.AddMessageEvent(_handitemConfigurationEvent);
 
-            // TODO: IgnoreResultMessageEvent — unported
-            // TODO: GuideSessionStartedMessageEvent — unported
-            // TODO: GuideSessionEndedMessageEvent — unported
-            // TODO: GuideSessionErrorMessageEvent — unported
+            _ignoreResultEvent = new IgnoreResultMessageEvent(OnIgnoreResult);
+            _connection.AddMessageEvent(_ignoreResultEvent);
+
+            _guideSessionStartedEvent = new GuideSessionStartedMessageEvent(OnGuideSessionStarted);
+            _connection.AddMessageEvent(_guideSessionStartedEvent);
+
+            _guideSessionEndedEvent = new GuideSessionEndedMessageEvent(OnGuideSessionEnded);
+            _connection.AddMessageEvent(_guideSessionEndedEvent);
+
+            _guideSessionErrorEvent = new GuideSessionErrorMessageEvent(OnGuideSessionError);
+            _connection.AddMessageEvent(_guideSessionErrorEvent);
 
             _specialRoomEffectEvent = new SpecialRoomEffectMessageEvent(OnSpecialRoomEvent);
             _connection.AddMessageEvent(_specialRoomEffectEvent);
@@ -780,8 +807,21 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
+        int id = parser.Id;
         int pickerId = parser.IsExpired ? -1 : parser.PickerId;
-        _roomCreator.DisposeObjectFurniture(_currentRoomId, parser.Id, pickerId, parser.IsExpired);
+        int delay = parser.Delay;
+
+        if (delay > 0)
+        {
+            IRoomCreator creator = _roomCreator;
+            int roomId = _currentRoomId;
+            _ = Task.Delay(delay).ContinueWith(_ =>
+                creator.DisposeObjectFurniture(roomId, id, pickerId, true));
+        }
+        else
+        {
+            _roomCreator.DisposeObjectFurniture(_currentRoomId, id, pickerId, true);
+        }
     }
 
     /// @see com.sulake.habbo.room.RoomMessageHandler::onObjectRemoveMultiple
@@ -960,6 +1000,36 @@ public class RoomMessageHandler : IDisposable
 
     #region User Handlers
 
+    /// @see com.sulake.habbo.room.RoomMessageHandler::onOwnUserEvent
+    private void OnOwnUserEvent(IMessageEvent e)
+    {
+        var parser = e.parser as UserObjectMessageEventParser;
+        if (parser == null)
+        {
+            return;
+        }
+
+        _ownUserId = parser.id;
+    }
+
+    /// @see com.sulake.habbo.room.RoomMessageHandler::onPetFigureUpdate
+    private void OnPetFigureUpdate(IMessageEvent e)
+    {
+        if (_roomCreator == null)
+        {
+            return;
+        }
+
+        var parser = e.parser as PetFigureUpdateMessageEventParser;
+        if (parser?.figureData == null)
+        {
+            return;
+        }
+
+        _roomCreator.UpdateObjectUserFigure(_currentRoomId, parser.roomIndex,
+            parser.figureData.figureString, "", "", parser.isRiding);
+    }
+
     /// @see com.sulake.habbo.room.RoomMessageHandler::onUsers
     private void OnUsers(IMessageEvent e)
     {
@@ -1005,7 +1075,13 @@ public class RoomMessageHandler : IDisposable
                 _roomCreator.UpdateObjectUserPosture(_currentRoomId, roomIndex, user.PetPosture);
             }
 
-            // TODO: Check "avatar.ignored.bubble.enabled" config and set figure_is_muted
+            if (_roomCreator.Configuration != null
+                && _roomCreator.Configuration.GetBoolean("avatar.ignored.bubble.enabled"))
+            {
+                // TODO: requires sessionDataManager.isIgnored(user.Name) — unported
+                // _roomCreator.UpdateObjectUserAction(_currentRoomId, roomIndex, "figure_is_muted",
+                //     Convert.ToInt32(_roomCreator.SessionDataManager.IsIgnored(user.Name)));
+            }
         }
 
         UpdateGuideMarker();
@@ -1170,6 +1246,24 @@ public class RoomMessageHandler : IDisposable
     #endregion
 
     #region User Action Handlers
+
+    /// @see com.sulake.habbo.room.RoomMessageHandler::onPetExperience
+    private void OnPetExperience(IMessageEvent e)
+    {
+        if (_roomCreator == null)
+        {
+            return;
+        }
+
+        var parser = e.parser as PetExperienceMessageEventParser;
+        if (parser == null)
+        {
+            return;
+        }
+
+        _roomCreator.UpdateObjectUserAction(_currentRoomId, parser.petRoomIndex,
+            "figure_gained_experience", parser.gainedExperience);
+    }
 
     /// @see com.sulake.habbo.room.RoomMessageHandler::onExpression
     private void OnExpression(IMessageEvent e)
@@ -1617,11 +1711,110 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        // TODO: Implement room visual effects (rotate, shake, zoom, disco) when effect classes are ported
-        // Effect 0: RoomRotatingEffect
-        // Effect 1: RoomShakingEffect
-        // Effect 2: RoomEngineZoomEvent dispatch
-        // Effect 3: Disco color sequence
+        switch (parser.EffectId)
+        {
+            case EFFECT_ROOM_ROTATE:
+                // TODO: RoomRotatingEffect.Init(250, 5000); RoomRotatingEffect.TurnVisualizationOn() — unported
+                break;
+            case EFFECT_ROOM_SHAKE:
+                // TODO: RoomShakingEffect.Init(250, 5000); RoomShakingEffect.TurnVisualizationOn() — unported
+                break;
+            case EFFECT_ROOM_ZOOM:
+                // TODO: _roomCreator.RoomSessionManager.Events.DispatchEvent(new RoomEngineZoomEvent(_currentRoomId, -1, true)) — requires session manager
+                break;
+            case EFFECT_ROOM_DISCO:
+                StartDiscoEffect(_currentRoomId);
+                break;
+        }
+    }
+
+    /// @see com.sulake.habbo.room.RoomMessageHandler::onSpecialRoomEvent (disco branch)
+    private void StartDiscoEffect(int roomId)
+    {
+        if (_roomCreator == null)
+        {
+            return;
+        }
+
+        uint[] discoColours = [29371, 16731195, 16764980, 0x99FF00, 29371, 16731195, 16764980, 0x99FF00, 0];
+        IRoomCreator creator = _roomCreator;
+
+        // AS3: new Timer(1000, discoColours.length + 1) — fires 10 times at 1s intervals
+        _ = Task.Run(async () =>
+        {
+            for (int i = 0; i < discoColours.Length + 1; i++)
+            {
+                await Task.Delay(1000);
+                if (i == discoColours.Length)
+                {
+                    // Last tick: reset background color only (AS3: arrayIndex out-of-bounds → 0, bgOnly=true)
+                    creator.UpdateObjectRoomColor(roomId, 0, 176, true);
+                }
+                else
+                {
+                    creator.UpdateObjectRoomColor(roomId, discoColours[i], 176, false);
+                }
+            }
+        });
+    }
+
+    /// @see com.sulake.habbo.room.RoomMessageHandler::onIgnoreResult
+    private void OnIgnoreResult(IMessageEvent e)
+    {
+        if (_roomCreator == null)
+        {
+            return;
+        }
+
+        if (_roomCreator.Configuration == null
+            || !_roomCreator.Configuration.GetBoolean("avatar.ignored.bubble.enabled"))
+        {
+            return;
+        }
+
+        var parser = e.parser as IgnoreResultMessageEventParser;
+        if (parser == null)
+        {
+            return;
+        }
+
+        // TODO: Requires sessionDataManager.GetSession().UserDataManager.GetUserDataByName(name) — unported
+        // switch (parser.result)
+        // {
+        //     case 1:
+        //     case 2:
+        //         _roomCreator.UpdateObjectUserAction(_currentRoomId, userData.roomObjectId, "figure_is_muted", 1);
+        //         break;
+        //     case 3:
+        //         _roomCreator.UpdateObjectUserAction(_currentRoomId, userData.roomObjectId, "figure_is_muted", 0);
+        //         break;
+        // }
+    }
+
+    /// @see com.sulake.habbo.room.RoomMessageHandler::onGuideSessionStarted
+    private void OnGuideSessionStarted(IMessageEvent e)
+    {
+        var parser = e.parser as GuideSessionStartedMessageEventParser;
+        if (parser == null)
+        {
+            return;
+        }
+
+        _guideUserId = parser.guideUserId;
+        _requesterUserId = parser.requesterUserId;
+        UpdateGuideMarker();
+    }
+
+    /// @see com.sulake.habbo.room.RoomMessageHandler::onGuideSessionEnded
+    private void OnGuideSessionEnded(IMessageEvent e)
+    {
+        RemoveGuideMarker();
+    }
+
+    /// @see com.sulake.habbo.room.RoomMessageHandler::onGuideSessionError
+    private void OnGuideSessionError(IMessageEvent e)
+    {
+        RemoveGuideMarker();
     }
 
     /// @see com.sulake.habbo.room.RoomMessageHandler::onBCPlacementWarning
@@ -1782,16 +1975,30 @@ public class RoomMessageHandler : IDisposable
     /// @see com.sulake.habbo.room.RoomMessageHandler::updateGuideMarker
     private void UpdateGuideMarker()
     {
-        // TODO: Implement guide session markers when session data manager is ported
-        // Requires: sessionDataManager.userId, userDataManager.getUserDataByType
+        // TODO: Requires sessionDataManager.userId and userDataManager.getUserDataByType — unported
+        // int ownUserId = _roomCreator.SessionDataManager.UserId;
+        // SetUserGuideStatus(_guideUserId, _requesterUserId == ownUserId ? 1 : 0);
+        // SetUserGuideStatus(_requesterUserId, _guideUserId == ownUserId ? 2 : 0);
     }
 
     /// @see com.sulake.habbo.room.RoomMessageHandler::removeGuideMarker
     private void RemoveGuideMarker()
     {
-        // TODO: Implement guide session marker removal when session data manager is ported
+        // TODO: SetUserGuideStatus calls require session data manager — unported
+        // SetUserGuideStatus(_guideUserId, 0);
+        // SetUserGuideStatus(_requesterUserId, 0);
         _guideUserId = -1;
         _requesterUserId = -1;
+    }
+
+    /// @see com.sulake.habbo.room.RoomMessageHandler::setUserGuideStatus
+    private void SetUserGuideStatus(int userId, int status)
+    {
+        // TODO: Requires roomSessionManager.GetSession().UserDataManager.GetUserDataByType(userId, 1) — unported
+        // IUserData userData = _roomCreator.RoomSessionManager.GetSession(_currentRoomId)
+        //     .UserDataManager.GetUserDataByType(userId, 1);
+        // if (userData != null)
+        //     _roomCreator.UpdateObjectUserAction(_currentRoomId, userData.RoomObjectId, "figure_guide_status", status);
     }
 
     #endregion

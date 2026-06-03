@@ -137,6 +137,8 @@ public class HabboMessages : IMessageConfiguration
 
         // --- Users ---
         events[1304] = typeof(IgnoreResultMessageEvent);
+        events[1247] = typeof(GroupDetailsChangedMessageEvent);
+        events[2092] = typeof(HabboGroupBadgesMessageEvent);
 
         // --- Handshake / System Composers ---
         composers[1113] = typeof(DisconnectMessageComposer);

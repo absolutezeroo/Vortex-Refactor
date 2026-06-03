@@ -139,10 +139,14 @@ public class RoomPreviewerWidget : IRoomPreviewerWidget, IWidget
     }
 
     /// @see habbo/window/widgets/RoomPreviewerWidget.as::showPreview
-    void IRoomPreviewerWidget.ShowPreview()
+    void IRoomPreviewerWidget.ShowPreview(Image bitmapData)
     {
-        // TODO(window-port): AS3 sets a BitmapData image on the room canvas display wrapper.
-        // In Godot, this would involve setting a texture on the preview display node.
+        Sprite2D sprite = new Sprite2D
+        {
+            Texture = ImageTexture.CreateFromImage(bitmapData),
+            Scale = new Vector2(2, 2),
+        };
+        _roomCanvas?.SetDisplayObject(sprite);
     }
 
     /// @see habbo/window/widgets/RoomPreviewerWidget.as::onRoomInitialized

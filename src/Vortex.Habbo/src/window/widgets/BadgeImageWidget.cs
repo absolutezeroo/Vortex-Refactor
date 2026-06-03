@@ -5,11 +5,14 @@ using System.Xml.Linq;
 using Godot;
 
 using Vortex.Core.Assets;
+using Vortex.Core.Communication.Messages;
 using Vortex.Core.Window;
 using Vortex.Core.Window.Components;
 using Vortex.Core.Window.Events;
 using Vortex.Core.Window.Iterators;
 using Vortex.Core.Window.Utils;
+using Vortex.Habbo.Communication;
+using Vortex.Habbo.Communication.Messages.Incoming.Users;
 using Vortex.Habbo.Window.Enum;
 
 using IDisposable = Vortex.Core.Runtime.IDisposable;
@@ -40,10 +43,8 @@ public class BadgeImageWidget : IBadgeImageWidget
     private string _badgeId;
     private int _groupId;
 
-    // TODO(communication): Uncomment when GroupDetailsChangedMessageEvent/HabboGroupBadgesMessageEvent are ported
-    // private GroupDetailsChangedMessageEvent? _groupDetailsEvent;
-    // private HabboGroupBadgesMessageEvent? _groupBadgesEvent;
-    private bool _hasGroupListeners;
+    private GroupDetailsChangedMessageEvent? _groupDetailsEvent;
+    private HabboGroupBadgesMessageEvent? _groupBadgesEvent;
 
     /// @see BadgeImageWidget.as::BadgeImageWidget
     public BadgeImageWidget(IWidgetWindow widgetWindow, HabboWindowManagerComponent windowManager)
@@ -117,14 +118,23 @@ public class BadgeImageWidget : IBadgeImageWidget
             _groupId = value;
             bool needsListeners = _type == Class3550.GROUP && _groupId > 0;
 
-            _hasGroupListeners = needsListeners switch
+            if (_windowManager?.Communication() is IHabboCommunicationManager comm)
             {
-                // TODO(communication): Register/remove GroupDetailsChangedMessageEvent and
-                // HabboGroupBadgesMessageEvent listeners — message event classes not yet ported
-                false when _hasGroupListeners => false,
-                true when !_hasGroupListeners => true,
-                _ => _hasGroupListeners,
-            };
+                if (!needsListeners && _groupBadgesEvent != null)
+                {
+                    comm.RemoveHabboConnectionMessageEvent(_groupDetailsEvent!);
+                    comm.RemoveHabboConnectionMessageEvent(_groupBadgesEvent);
+                    _groupDetailsEvent = null;
+                    _groupBadgesEvent = null;
+                }
+                else if (needsListeners && _groupBadgesEvent == null)
+                {
+                    _groupDetailsEvent = new GroupDetailsChangedMessageEvent(OnGroupDetailsChanged);
+                    _groupBadgesEvent = new HabboGroupBadgesMessageEvent(OnHabboGroupBadges);
+                    comm.AddHabboConnectionMessageEvent(_groupDetailsEvent);
+                    comm.AddHabboConnectionMessageEvent(_groupBadgesEvent);
+                }
+            }
         }
     }
 
@@ -349,6 +359,23 @@ public class BadgeImageWidget : IBadgeImageWidget
         ResourceManager? resourceManager = _windowManager.ResourceManager() as ResourceManager;
         resourceManager?.RemoveAsset(GetAssetUri());
         Refresh();
+    }
+
+    /// @see BadgeImageWidget.as::onGroupDetailsChanged
+    private void OnGroupDetailsChanged(IMessageEvent param1)
+    {
+        GroupDetailsChangedMessageEvent ev = (GroupDetailsChangedMessageEvent)param1;
+        ForceRefresh(ev.groupId, _badgeId);
+    }
+
+    /// @see BadgeImageWidget.as::onHabboGroupBadges
+    private void OnHabboGroupBadges(IMessageEvent param1)
+    {
+        HabboGroupBadgesMessageEvent ev = (HabboGroupBadgesMessageEvent)param1;
+        if (ev.badges.TryGetValue(_groupId, out string? badge))
+        {
+            ForceRefresh(_groupId, badge);
+        }
     }
 
     /// @see BadgeImageWidget.as::onClick

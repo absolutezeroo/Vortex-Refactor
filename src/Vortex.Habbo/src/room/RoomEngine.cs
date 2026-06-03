@@ -1946,11 +1946,19 @@ public class RoomEngine : Component,
             if (pendingData != null)
             {
                 if (floorType != null)
+                {
                     pendingData.PendingFloorType = floorType;
+                }
+
                 if (wallType != null)
+                {
                     pendingData.PendingWallType = wallType;
+                }
+
                 if (landscapeType != null)
+                {
                     pendingData.PendingLandscapeType = landscapeType;
+                }
             }
 
             return true;

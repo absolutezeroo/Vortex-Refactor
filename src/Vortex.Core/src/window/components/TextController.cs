@@ -1216,13 +1216,19 @@ public class TextController : WindowController, ITextWindow, ITextFieldContainer
 
 	/// @see TextController.as::getCharBoundaries
 	// TODO(window-port): Needs per-glyph bounding box from Font
-	object? ITextWindow.GetCharBoundaries(int index) => null;
+	object? ITextWindow.GetCharBoundaries(int index)
+    {
+        return null;
+    }
 
-	/// @see TextController.as::getCharIndexAtPoint
+    /// @see TextController.as::getCharIndexAtPoint
 	// TODO(window-port): Needs font glyph measurement for char-level hit-testing
-	int ITextWindow.GetCharIndexAtPoint(float x, float y) => -1;
+	int ITextWindow.GetCharIndexAtPoint(float x, float y)
+    {
+        return -1;
+    }
 
-	/// @see TextController.as::getFirstCharInParagraph
+    /// @see TextController.as::getFirstCharInParagraph
 	int ITextWindow.GetFirstCharInParagraph(int charIndex)
 	{
 		if (charIndex < 0 || charIndex >= _text.Length)
@@ -1236,9 +1242,12 @@ public class TextController : WindowController, ITextWindow, ITextFieldContainer
 	}
 
 	/// @see TextController.as::getImageReference — not applicable (no embedded DisplayObjects)
-	object? ITextWindow.GetImageReference(string id) => null;
+	object? ITextWindow.GetImageReference(string id)
+    {
+        return null;
+    }
 
-	/// @see TextController.as::getLineIndexAtPoint
+    /// @see TextController.as::getLineIndexAtPoint
 	int ITextWindow.GetLineIndexAtPoint(float x, float y)
 	{
 		if (NumLines <= 1)
@@ -1301,9 +1310,12 @@ public class TextController : WindowController, ITextWindow, ITextFieldContainer
 
 	/// @see TextController.as::getLineMetrics
 	// TODO(window-port): Return proper TextLineMetrics struct with ascent/descent/width
-	object? ITextWindow.GetLineMetrics(int lineIndex) => null;
+	object? ITextWindow.GetLineMetrics(int lineIndex)
+    {
+        return null;
+    }
 
-	/// @see TextController.as::getLineOffset
+    /// @see TextController.as::getLineOffset
 	int ITextWindow.GetLineOffset(int lineIndex)
 	{
 		if (lineIndex <= 0)
@@ -1363,9 +1375,12 @@ public class TextController : WindowController, ITextWindow, ITextFieldContainer
 	}
 
 	/// @see TextController.as::getTextFormat — no range-format tracking in Godot port
-	object? ITextWindow.GetTextFormat(int beginIndex, int endIndex) => null;
+	object? ITextWindow.GetTextFormat(int beginIndex, int endIndex)
+    {
+        return null;
+    }
 
-	/// @see TextController.as::replaceText
+    /// @see TextController.as::replaceText
 	void ITextWindow.ReplaceText(int beginIndex, int endIndex, string newText)
 	{
 		if (beginIndex < 0 || endIndex > _text.Length || beginIndex > endIndex)

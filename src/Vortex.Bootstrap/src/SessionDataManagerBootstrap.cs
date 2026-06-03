@@ -1,14 +1,12 @@
 using Vortex.Core.Runtime;
+using Vortex.Habbo.Session;
 
 namespace Vortex;
 
 /// @see WIN63-202407091256-704579380-Source-main/bootstrap/SessionDataManagerBootstrap.as
-/// TODO(as3-port): Parent AS3 class "SessionDataManager" is not ported yet.
-public sealed class SessionDataManagerBootstrap : HabboBootstrapComponentBase
+public sealed class SessionDataManagerBootstrap : SessionDataManager
 {
     /// @see WIN63-202407091256-704579380-Source-main/bootstrap/SessionDataManagerBootstrap.as::SessionDataManagerBootstrap
-    public SessionDataManagerBootstrap(IContext param1, uint param2 = 0, object? param3 = null) : base(param1, param2, param3)
-    {
-        // TODO(as3-port): Replace temporary base with SessionDataManager once migrated.
-    }
+    public SessionDataManagerBootstrap(IContext param1, uint param2 = 0, object? param3 = null)
+        : base(param1, param2, param3) { }
 }

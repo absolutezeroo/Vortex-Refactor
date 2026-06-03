@@ -1985,7 +1985,9 @@ public class WindowController : WindowModel, IWindowContainer, IGraphicContextHo
             {
                 IWindow? child = GetChildAt(i);
                 if (child == null)
+                {
                     continue;
+                }
 
                 // @see WindowController.as — save child's scale/center bits, clear during offset, restore after
                 uint childSavedBits = child.param & (192u | 3072u);

@@ -11,4 +11,6 @@ public class UserChangeMessageEvent(Action<IMessageEvent> param1) : MessageEvent
     public int id => ((UserChangeMessageEventParser)parser!).Id;
     public string figure => ((UserChangeMessageEventParser)parser!).Figure;
     public string sex => ((UserChangeMessageEventParser)parser!).Sex;
+    public string customInfo => ((UserChangeMessageEventParser)parser!).CustomInfo;
+    public int achievementScore => ((UserChangeMessageEventParser)parser!).AchievementScore;
 }

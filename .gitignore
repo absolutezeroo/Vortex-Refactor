@@ -89,3 +89,5 @@ Desktop.ini
 sources/
 *.png
 *.png.import
+server/
+tools/to_convert

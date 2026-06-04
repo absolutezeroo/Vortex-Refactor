@@ -15,7 +15,10 @@ public class RoomPermissionsHandler : BaseHandler
         : base(connection, listener)
     {
         if (connection == null)
+        {
             return;
+        }
+
         connection.AddMessageEvent(new YouAreControllerMessageEvent(OnYouAreController));
         connection.AddMessageEvent(new YouAreNotControllerMessageEvent(OnYouAreNotController));
         connection.AddMessageEvent(new YouAreOwnerMessageEvent(OnYouAreOwner));
@@ -26,10 +29,16 @@ public class RoomPermissionsHandler : BaseHandler
     {
         var parser = (ev as MessageEvent)?.parser as YouAreControllerMessageEventParser;
         if (parser == null)
+        {
             return;
+        }
+
         var session = listener?.GetSession(parser.FlatId);
         if (session == null)
+        {
             return;
+        }
+
         session.roomControllerLevel = parser.RoomControllerLevel;
     }
 
@@ -38,10 +47,16 @@ public class RoomPermissionsHandler : BaseHandler
     {
         var parser = (ev as MessageEvent)?.parser as YouAreNotControllerMessageEventParser;
         if (parser == null)
+        {
             return;
+        }
+
         var session = listener?.GetSession(parser.FlatId);
         if (session == null)
+        {
             return;
+        }
+
         session.roomControllerLevel = 0;
     }
 
@@ -50,7 +65,10 @@ public class RoomPermissionsHandler : BaseHandler
     {
         var session = listener?.GetSession(currentRoomId);
         if (session == null)
+        {
             return;
+        }
+
         session.isRoomOwner = true;
     }
 }

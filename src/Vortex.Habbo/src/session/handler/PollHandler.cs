@@ -1,6 +1,9 @@
 // @see com.sulake.habbo.session.handler.PollHandler
 
 using Vortex.Core.Communication.Connection;
+using Vortex.Core.Communication.Messages;
+using Vortex.Habbo.Communication.Messages.Incoming.Room.Poll;
+using Vortex.Habbo.Communication.Messages.Parser.Room.Poll;
 using Vortex.Habbo.Session.Events;
 
 namespace Vortex.Habbo.Session.Handler;
@@ -13,18 +16,73 @@ public class PollHandler : BaseHandler
         : base(connection, listener)
     {
         if (connection == null)
+        {
             return;
-        // TODO(as3-port): PollContentsEvent not yet ported
-        // TODO(as3-port): PollOfferEvent not yet ported
-        // TODO(as3-port): PollErrorEvent not yet ported
+        }
+
+        connection.AddMessageEvent(new PollContentsEvent(OnPollContents));
+        connection.AddMessageEvent(new PollOfferEvent(OnPollOffer));
+        connection.AddMessageEvent(new PollErrorEvent(OnPollError));
     }
 
-    // TODO(as3-port): onPollOfferEvent — parser: PollOfferParser (id, headline, summary)
-    //   → dispatch RoomSessionPollEvent("RSPE_POLL_OFFER", session, id) with summary set
+    /// @see PollHandler.as::onPollOfferEvent
+    private void OnPollOffer(IMessageEvent ev)
+    {
+        var parser = (ev as MessageEvent)?.parser as PollOfferMessageEventParser;
+        if (parser == null)
+        {
+            return;
+        }
 
-    // TODO(as3-port): onPollErrorEvent — parser: _SafeStr_58
-    //   → dispatch RoomSessionPollEvent("RSPE_POLL_ERROR", session, -1) headline="???" summary="???"
+        var session = listener?.GetSession(currentRoomId);
+        if (session == null)
+        {
+            return;
+        }
 
-    // TODO(as3-port): onPollContentsEvent — parser: PollContentsParser (id, startMessage, endMessage, numQuestions, questionArray, npsPoll)
-    //   → dispatch RoomSessionPollEvent("RSPE_POLL_CONTENT", session, id) with all fields set
+        var pollEvent = new RoomSessionPollEvent(RoomSessionPollEvent.OFFER, session, parser.Id)
+        {
+            headline = parser.Headline,
+            summary = parser.Summary,
+        };
+        listener?.events?.DispatchEvent(pollEvent);
+    }
+
+    /// @see PollHandler.as::onPollErrorEvent
+    private void OnPollError(IMessageEvent ev)
+    {
+        var session = listener?.GetSession(currentRoomId);
+        if (session == null)
+        {
+            return;
+        }
+
+        listener?.events?.DispatchEvent(new RoomSessionPollEvent(RoomSessionPollEvent.ERROR, session, -1));
+    }
+
+    /// @see PollHandler.as::onPollContentsEvent
+    private void OnPollContents(IMessageEvent ev)
+    {
+        var parser = (ev as MessageEvent)?.parser as PollContentsMessageEventParser;
+        if (parser == null)
+        {
+            return;
+        }
+
+        var session = listener?.GetSession(currentRoomId);
+        if (session == null)
+        {
+            return;
+        }
+
+        var pollEvent = new RoomSessionPollEvent(RoomSessionPollEvent.CONTENT, session, parser.Id)
+        {
+            startMessage  = parser.StartMessage ?? "",
+            endMessage    = parser.EndMessage ?? "",
+            numQuestions  = parser.NumQuestions,
+            questionArray = parser.QuestionArray,
+            npsPoll       = parser.NpsPoll,
+        };
+        listener?.events?.DispatchEvent(pollEvent);
+    }
 }

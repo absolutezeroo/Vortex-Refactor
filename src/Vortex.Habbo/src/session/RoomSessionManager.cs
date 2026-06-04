@@ -81,12 +81,21 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
     public override void Dispose()
     {
         if (disposed)
+        {
             return;
+        }
+
         foreach (var session in _sessions.Values)
+        {
             session.Dispose();
+        }
+
         _sessions.Clear();
         foreach (var handler in _handlers)
+        {
             handler.Dispose();
+        }
+
         _handlers.Clear();
         base.Dispose();
     }
@@ -95,6 +104,7 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
     private void OnRoomEngineInitialized(object? ev)
     {
         _engineInitialized = true;
+
         ExecutePendingSessionRequest();
     }
 
@@ -102,7 +112,10 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
     private void OnRoomVisualizationSettings(object? ev)
     {
         if (_vizSettingsHandled || !_useVisualizationSettings)
+        {
             return;
+        }
+
         _vizSettingsHandled = true;
         // TODO(as3-port): IRoomEngine.createRoomCanvas / scene setup not yet ported
     }
@@ -169,7 +182,10 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
         string key = GetRoomIdentifier(session.roomId);
         _sessionStarting = true;
         if (_sessions.ContainsKey(key))
+        {
             DisposeSession(session.roomId, false);
+        }
+
         session.connection = _communication?.connection;
         _sessions[key] = session;
         base.events?.DispatchEvent(new RoomSessionEvent("RSE_CREATED", session));
@@ -179,7 +195,9 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
             _pendingContentTypes = [];
             _viewerSession = session;
             if (_pendingContentTypes.Count == 0)
+            {
                 StartSession(session);
+            }
         }
         return true;
     }
@@ -188,9 +206,15 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
     public bool StartSession(IRoomSession session)
     {
         if (session.state == "RSE_STARTED")
+        {
             return false;
+        }
+
         if (session.isGameSession)
+        {
             return true;
+        }
+
         if (session.Start())
         {
             _sessionStarting = false;
@@ -224,7 +248,9 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
     {
         string key = GetRoomIdentifier(1);
         if (_sessions.TryGetValue(key, out var session) && session.isGameSession)
+        {
             DisposeSession(1, false);
+        }
     }
 
     /// @see RoomSessionManager.as::sessionUpdate (IRoomHandlerListener)
@@ -232,7 +258,10 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
     {
         var session = GetSession(roomId);
         if (session == null)
+        {
             return;
+        }
+
         switch (state)
         {
             case "RS_CONNECTED":
@@ -249,7 +278,10 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
     {
         string oldKey = GetRoomIdentifier(oldRoomId);
         if (!_sessions.Remove(oldKey, out var session))
+        {
             return;
+        }
+
         (session as RoomSession)?.Reset(newRoomId);
         string newKey = GetRoomIdentifier(newRoomId);
         _sessions.Remove(newKey);
@@ -269,7 +301,10 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
     {
         string key = GetRoomIdentifier(roomId);
         if (!_sessions.Remove(key, out var session))
+        {
             return;
+        }
+
         base.events?.DispatchEvent(new RoomSessionEvent("RSE_ENDED", session, sendDisconnect));
         session.Dispose();
     }
@@ -277,7 +312,9 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
     private void UpdateHandlers(IRoomSession session)
     {
         foreach (var handler in _handlers)
+        {
             handler.currentRoomId = session.roomId;
+        }
     }
 
     /// @see RoomSessionManager.as::getRoomIdentifier — always returns same key per source

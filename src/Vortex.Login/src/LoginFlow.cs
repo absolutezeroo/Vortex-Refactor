@@ -8,6 +8,7 @@ using Godot;
 
 using Vortex.Core;
 using Vortex.Core.Runtime;
+using Vortex.IID;
 using Vortex.Core.Utils;
 using Vortex.Habbo.Communication;
 using Vortex.Habbo.Communication.Login;
@@ -436,6 +437,11 @@ public partial class LoginFlow : Control, ILoginContext, ILoginViewer
 
         try
         {
+            // Register assemblies so manifest type resolution can find IID and Bootstrap types.
+            ComponentContext.RegisterManifestAssembly(typeof(ComponentContext).Assembly);         // Vortex.Core
+            ComponentContext.RegisterManifestAssembly(typeof(CoreCommunicationFrameworkLib).Assembly); // Vortex.Bootstrap
+            ComponentContext.RegisterManifestAssembly(typeof(IIDCoreCommunicationManager).Assembly);   // Vortex.IID
+
             _fakeContext = new CoreComponentContext(
                 null,
                 new class_516(),
@@ -443,7 +449,9 @@ public partial class LoginFlow : Control, ILoginContext, ILoginViewer
                 Clone(properties)
             );
 
-            _ = _fakeContext.PrepareComponent(typeof(CoreCommunicationManagerBootstrap));
+            // Use CoreCommunicationFrameworkLib (not the bootstrap directly) so the manifest
+            // is processed and IIDCoreCommunicationManager is published to the context.
+            _ = _fakeContext.PrepareComponent(typeof(CoreCommunicationFrameworkLib));
             _configuration = _fakeContext.PrepareComponent(typeof(HabboConfigurationManagerBootstrap)) as HabboConfigurationManager;
             _communication = _fakeContext.PrepareComponent(typeof(HabboCommunicationManagerBootstrap)) as IHabboCommunicationManager;
             _localization = _fakeContext.PrepareComponent(

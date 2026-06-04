@@ -16,7 +16,10 @@ public class PresentHandler : BaseHandler
         : base(connection, listener)
     {
         if (connection == null)
+        {
             return;
+        }
+
         connection.AddMessageEvent(new PresentOpenedMessageEvent(OnPresentOpened));
     }
 
@@ -25,12 +28,21 @@ public class PresentHandler : BaseHandler
     {
         var parser = (ev as MessageEvent)?.parser as PresentOpenedMessageEventParser;
         if (parser == null)
+        {
             return;
+        }
+
         var session = listener?.GetSession(currentRoomId);
         if (session == null)
+        {
             return;
+        }
+
         if (listener?.events == null)
+        {
             return;
+        }
+
         listener.events.DispatchEvent(new RoomSessionPresentEvent(
             RoomSessionPresentEvent.ROOM_SESSION_PRESENT_OPENED, session,
             parser.ClassId, parser.ItemType, parser.ProductCode,

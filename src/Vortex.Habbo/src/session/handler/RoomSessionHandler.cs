@@ -20,12 +20,15 @@ public class RoomSessionHandler : BaseHandler
         : base(connection, listener)
     {
         if (connection == null)
+        {
             return;
+        }
+
         connection.AddMessageEvent(new OpenConnectionMessageEvent(OnRoomConnected));
         connection.AddMessageEvent(new FlatAccessibleMessageEvent(OnFlatAccessible));
         connection.AddMessageEvent(new RoomReadyMessageEvent(OnRoomReady));
         connection.AddMessageEvent(new CloseConnectionMessageEvent(OnRoomDisconnected));
-        // TODO(as3-port): FlatAccessDeniedMessageEvent not yet ported
+        connection.AddMessageEvent(new FlatAccessDeniedMessageEvent(OnFlatAccessDenied));
         connection.AddMessageEvent(new RoomQueueStatusMessageEvent(OnRoomQueueStatus));
         connection.AddMessageEvent(new YouAreSpectatorMessageEvent(OnYouAreSpectator));
     }
@@ -35,7 +38,10 @@ public class RoomSessionHandler : BaseHandler
     {
         var parser = (ev as MessageEvent)?.parser as OpenConnectionMessageEventParser;
         if (parser == null)
+        {
             return;
+        }
+
         listener?.SessionUpdate(parser.FlatId, RS_CONNECTED);
     }
 
@@ -44,13 +50,18 @@ public class RoomSessionHandler : BaseHandler
     {
         var parser = (ev as MessageEvent)?.parser as FlatAccessibleMessageEventParser;
         if (parser == null)
+        {
             return;
+        }
+
         string? userName = parser.UserName;
         if (!string.IsNullOrEmpty(userName) && listener?.events != null)
         {
             var session = listener.GetSession(parser.FlatId);
             if (session != null)
+            {
                 listener.events.DispatchEvent(new RoomSessionDoorbellEvent(RoomSessionDoorbellEvent.ACCEPTED, session, userName));
+            }
         }
     }
 
@@ -59,16 +70,37 @@ public class RoomSessionHandler : BaseHandler
     {
         var parser = (ev as MessageEvent)?.parser as RoomReadyMessageEventParser;
         if (parser == null)
+        {
             return;
+        }
+
         int roomId = parser.RoomId;
         if (listener == null)
+        {
             return;
+        }
+
         listener.SessionReinitialize(roomId, roomId);
         listener.SessionUpdate(roomId, RS_READY);
     }
 
     /// @see RoomSessionHandler.as::onFlatAccessDenied
-    // TODO(as3-port): FlatAccessDeniedMessageEvent not yet ported — handler not wired
+    private void OnFlatAccessDenied(IMessageEvent ev)
+    {
+        var parser = (ev as MessageEvent)?.parser as FlatAccessDeniedMessageEventParser;
+        if (parser == null)
+        {
+            return;
+        }
+
+        var session = listener?.GetSession(parser.FlatId);
+        if (session == null)
+        {
+            return;
+        }
+
+        listener?.events?.DispatchEvent(new RoomSessionDoorbellEvent(RoomSessionDoorbellEvent.REJECTED, session, parser.Info ?? ""));
+    }
 
     /// @see RoomSessionHandler.as::onRoomDisconnected
     private void OnRoomDisconnected(IMessageEvent ev)
@@ -81,18 +113,30 @@ public class RoomSessionHandler : BaseHandler
     private void OnRoomQueueStatus(IMessageEvent ev)
     {
         if (listener?.events == null)
+        {
             return;
+        }
+
         var parser = (ev as MessageEvent)?.parser as RoomQueueStatusMessageEventParser;
         if (parser == null)
+        {
             return;
+        }
+
         var session = listener.GetSession(parser.FlatId);
         if (session == null)
+        {
             return;
+        }
+
         foreach (int target in parser.GetQueueSetTargets())
         {
             var queueSet = parser.GetQueueSet(target);
             if (queueSet == null)
+            {
                 continue;
+            }
+
             var queueEvent = new RoomSessionQueueEvent(session, queueSet.Name, queueSet.Target,
                 queueSet.Target == parser.ActiveTarget);
             for (int i = 0; i < queueSet.QueueCount; i++)
@@ -108,13 +152,22 @@ public class RoomSessionHandler : BaseHandler
     private void OnYouAreSpectator(IMessageEvent ev)
     {
         if (listener == null)
+        {
             return;
+        }
+
         var parser = (ev as MessageEvent)?.parser as YouAreSpectatorMessageEventParser;
         if (parser == null)
+        {
             return;
+        }
+
         var session = listener.GetSession(parser.FlatId);
         if (session == null)
+        {
             return;
+        }
+
         session.isSpectatorMode = true;
     }
 }

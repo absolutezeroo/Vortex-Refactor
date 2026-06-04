@@ -26,7 +26,10 @@ public class RoomSessionDimmerPresetsEvent : RoomSessionEvent
     {
         int index = id - 1;
         while (_presets.Count <= index)
+        {
             _presets.Add(null);
+        }
+
         _presets[index] = new RoomSessionDimmerPresetsEventPresetItem(id, type, (uint)color, (uint)light);
     }
 
@@ -34,7 +37,10 @@ public class RoomSessionDimmerPresetsEvent : RoomSessionEvent
     public RoomSessionDimmerPresetsEventPresetItem? GetPreset(int index)
     {
         if (index < 0 || index >= _presets.Count)
+        {
             return null;
+        }
+
         return _presets[index];
     }
 }

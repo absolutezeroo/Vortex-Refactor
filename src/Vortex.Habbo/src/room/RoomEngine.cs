@@ -11,11 +11,14 @@ using Vortex.Room.Object;
 using Vortex.Room.Renderer;
 using Vortex.Room.Utils;
 using Vortex.Habbo.Communication;
+using Vortex.Habbo.Configuration;
 using Vortex.Habbo.Room.Events;
 using Vortex.Habbo.Room.Messages;
 using Vortex.Habbo.Room.Object;
 using Vortex.Habbo.Room.Object.Data;
 using Vortex.Habbo.Room.Utils;
+using Vortex.Habbo.Session;
+using Vortex.Habbo.Window;
 
 using RoomObjectUpdateMessage = Vortex.Room.Messages.RoomObjectUpdateMessage;
 using IRoomObjectVisualizationFactory = Vortex.Room.Object.IRoomObjectVisualizationFactory;
@@ -50,6 +53,7 @@ public class RoomEngine : Component,
 
     protected int _activeRoomId;
     private IHabboCommunicationManager? _communication;
+    private IHabboConfigurationManager? _configurationManager;
     private IRoomRendererFactory? _roomRendererFactory;
     private IRoomObjectFactory? _roomObjectFactory;
     private IRoomObjectVisualizationFactory? _visualizationFactory;
@@ -83,11 +87,11 @@ public class RoomEngine : Component,
     // TODO: RoomAreaSelectionManager _areaSelectionManager — unported
 
     private IRoomManager? _roomManager;
-    // TODO: ISessionDataManager _sessionDataManager — unported
-    // TODO: IRoomSessionManager _roomSessionManager — unported
+    private ISessionDataManager _sessionDataManager;
+    private IRoomSessionManager _roomSessionManager;
     // TODO: IHabboToolbar _toolbar — unported
     // TODO: IHabboCatalog _catalog — unported
-    // TODO: IHabboWindowManager _windowManager — unported
+    private IHabboWindowManager _windowManager;
 
     /// @see com.sulake.habbo.room.RoomEngine::RoomEngine
     public RoomEngine(IContext? param1 = null, uint param2 = 0, object? param3 = null)
@@ -126,7 +130,9 @@ public class RoomEngine : Component,
                 ),
                 // 6. IHabboConfigurationManager (required, event: "complete" -> OnConfigurationComplete)
                 new ComponentDependency(
-                    new IID.IIDHabboConfigurationManager(), null, true,
+                    new IID.IIDHabboConfigurationManager(),
+                    o => _configurationManager = o as IHabboConfigurationManager,
+                    true,
                     [new DependencyEventListener("complete", _ => OnConfigurationComplete())]
                 ),
                 // 7. IHabboAdManager (optional, 3 ad events) — TODO: wire when ad manager is ported
@@ -134,13 +140,13 @@ public class RoomEngine : Component,
                 //     new IID.IIDHabboAdManager(), ...
                 // ),
                 // 8. ISessionDataManager — TODO: wire when session data manager is ported
-                // new ComponentDependency(
-                //     new IID.IIDSessionDataManager(), o => _sessionDataManager = o as ISessionDataManager
-                // ),
+                new ComponentDependency(
+                    new IID.IIDSessionDataManager(), o => _sessionDataManager = o as ISessionDataManager
+                ),
                 // 9. IRoomSessionManager (optional, 2 session events) — TODO: wire when session manager is ported
-                // new ComponentDependency(
-                //     new IID.IIDHabboRoomSessionManager(), ...
-                // ),
+                 new ComponentDependency(
+                     new IID.IIDHabboRoomSessionManager(), o => _roomSessionManager = o as IRoomSessionManager
+                     ),
                 // 10. IHabboToolbar (optional, toolbar click event) — TODO: wire when toolbar is ported
                 // new ComponentDependency(
                 //     new IID.IIDHabboToolbar(), ...
@@ -154,9 +160,9 @@ public class RoomEngine : Component,
                 //     new IID.IIDHabboGameManager(), ...
                 // ),
                 // 13. IHabboWindowManager — TODO: wire when window manager dep is needed
-                // new ComponentDependency(
-                //     new IID.IIDHabboWindowManager(), o => _windowManager = o as IHabboWindowManager
-                // ),
+                new ComponentDependency(
+                    new IID.IIDHabboWindowManager(), o => _windowManager = o as IHabboWindowManager
+                ),
             ];
 
             return deps;
@@ -239,6 +245,12 @@ public class RoomEngine : Component,
         RegisterUpdateReceiver(this, 1);
         _roomObjectFactory?.AddObjectEventListener(OnRoomObjectEvent);
         // TODO: _areaSelectionManager = new RoomAreaSelectionManager(this);
+
+        // Config manager may have already fired "complete" before our listener was registered.
+        if (_configurationManager?.IsInitialized() == true)
+        {
+            OnConfigurationComplete();
+        }
     }
 
     /// @see com.sulake.habbo.room.RoomEngine::dispose

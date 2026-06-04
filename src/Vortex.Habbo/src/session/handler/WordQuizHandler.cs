@@ -1,6 +1,9 @@
 // @see com.sulake.habbo.session.handler.WordQuizHandler
 
 using Vortex.Core.Communication.Connection;
+using Vortex.Core.Communication.Messages;
+using Vortex.Habbo.Communication.Messages.Incoming.Room.Quiz;
+using Vortex.Habbo.Communication.Messages.Parser.Room.Quiz;
 using Vortex.Habbo.Session.Events;
 
 namespace Vortex.Habbo.Session.Handler;
@@ -13,18 +16,85 @@ public class WordQuizHandler : BaseHandler
         : base(connection, listener)
     {
         if (connection == null)
+        {
             return;
-        // TODO(as3-port): QuestionEvent not yet ported
-        // TODO(as3-port): QuestionAnsweredEvent not yet ported
-        // TODO(as3-port): QuestionFinishedEvent not yet ported
+        }
+
+        connection.AddMessageEvent(new QuestionEvent(OnQuestionStatus));
+        connection.AddMessageEvent(new QuestionAnsweredEvent(OnQuestionAnswered));
+        connection.AddMessageEvent(new QuestionFinishedEvent(OnQuestionFinished));
     }
 
-    // TODO(as3-port): onQuestionStatus — QuestionParser (pollId, question, duration, pollType, questionId)
-    //   → dispatch RoomSessionWordQuizEvent("RWPUW_NEW_QUESTION", session, pollId)
+    /// @see WordQuizHandler.as::onQuestionStatus
+    private void OnQuestionStatus(IMessageEvent ev)
+    {
+        var parser = (ev as MessageEvent)?.parser as QuestionMessageEventParser;
+        if (parser == null)
+        {
+            return;
+        }
 
-    // TODO(as3-port): onQuestionAnsweredEvent — QuestionAnsweredParser (userId, value, answerCounts)
-    //   → dispatch RoomSessionWordQuizEvent("RWPUW_QUESTION_ANSWERED", session, userId)
+        var session = listener?.GetSession(currentRoomId);
+        if (session == null)
+        {
+            return;
+        }
 
-    // TODO(as3-port): onQuestionFinishedEvent — QuestionFinishedParser (questionId, answerCounts)
-    //   → dispatch RoomSessionWordQuizEvent("RWPUW_QUESION_FINSIHED", session)
+        var quizEvent = new RoomSessionWordQuizEvent(RoomSessionWordQuizEvent.NEW_QUESTION, session, parser.PollId)
+        {
+            pollId     = parser.PollId,
+            pollType   = parser.PollType,
+            questionId = parser.QuestionId,
+            duration   = parser.Duration,
+            question   = parser.Question,
+        };
+        listener?.events?.DispatchEvent(quizEvent);
+    }
+
+    /// @see WordQuizHandler.as::onQuestionAnsweredEvent
+    private void OnQuestionAnswered(IMessageEvent ev)
+    {
+        var parser = (ev as MessageEvent)?.parser as QuestionAnsweredMessageEventParser;
+        if (parser == null)
+        {
+            return;
+        }
+
+        var session = listener?.GetSession(currentRoomId);
+        if (session == null)
+        {
+            return;
+        }
+
+        var quizEvent = new RoomSessionWordQuizEvent(RoomSessionWordQuizEvent.QUESTION_ANSWERED, session, parser.UserId)
+        {
+            userId       = parser.UserId,
+            value        = parser.Value,
+            answerCounts = parser.AnswerCounts,
+        };
+        listener?.events?.DispatchEvent(quizEvent);
+    }
+
+    /// @see WordQuizHandler.as::onQuestionFinishedEvent
+    private void OnQuestionFinished(IMessageEvent ev)
+    {
+        var parser = (ev as MessageEvent)?.parser as QuestionFinishedMessageEventParser;
+        if (parser == null)
+        {
+            return;
+        }
+
+        var session = listener?.GetSession(currentRoomId);
+        if (session == null)
+        {
+            return;
+        }
+
+        var quizEvent = new RoomSessionWordQuizEvent(RoomSessionWordQuizEvent.FINISHED, session)
+        {
+            questionId   = parser.QuestionId,
+            answerCounts = parser.AnswerCounts,
+        };
+        listener?.events?.DispatchEvent(quizEvent);
+    }
 }

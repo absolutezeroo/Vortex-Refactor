@@ -16,7 +16,10 @@ public class GenericErrorHandler : BaseHandler
         : base(connection, listener)
     {
         if (connection == null)
+        {
             return;
+        }
+
         connection.AddMessageEvent(new GenericErrorEvent(OnGenericError));
     }
 
@@ -26,16 +29,24 @@ public class GenericErrorHandler : BaseHandler
         var errorEv = ev as GenericErrorEvent;
         var parser = errorEv?.GetParser();
         if (parser == null)
+        {
             return;
+        }
+
         var session = listener?.GetSession(currentRoomId);
         if (session == null)
+        {
             return;
+        }
+
         string? errorType = parser.errorCode switch
         {
             4008 => RoomSessionErrorMessageEvent.KICKED_BY_OWNER,
             _ => null,
         };
         if (errorType != null && listener?.events != null)
+        {
             listener.events.DispatchEvent(new RoomSessionErrorMessageEvent(errorType, session));
+        }
     }
 }

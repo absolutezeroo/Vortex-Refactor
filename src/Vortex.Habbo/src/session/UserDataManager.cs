@@ -38,7 +38,10 @@ public class UserDataManager : IUserDataManager
     public IUserData? GetUserDataByType(int userId, int type)
     {
         if (!_byTypeAndWebId.TryGetValue(type, out var typeMap))
+        {
             return null;
+        }
+
         typeMap.TryGetValue(userId, out var data);
         return data;
     }
@@ -56,7 +59,9 @@ public class UserDataManager : IUserDataManager
         foreach (var data in _byRoomIndex.Values)
         {
             if (data.name == name)
+            {
                 return data;
+            }
         }
         return null;
     }
@@ -73,9 +78,14 @@ public class UserDataManager : IUserDataManager
     public void RemoveUserDataByRoomIndex(int roomObjectId)
     {
         if (!_byRoomIndex.Remove(roomObjectId, out var data))
+        {
             return;
+        }
+
         if (_byTypeAndWebId.TryGetValue(data.type, out var typeMap))
+        {
             typeMap.Remove(data.webID);
+        }
     }
 
     /// @see UserDataManager.as::setUserBadges
@@ -88,7 +98,10 @@ public class UserDataManager : IUserDataManager
     public void SetUserData(IUserData userData)
     {
         if (userData == null)
+        {
             return;
+        }
+
         RemoveUserDataByRoomIndex(userData.roomObjectId);
         if (!_byTypeAndWebId.TryGetValue(userData.type, out var typeMap))
         {
@@ -104,7 +117,10 @@ public class UserDataManager : IUserDataManager
     {
         var data = GetUserDataByIndex(roomObjectId);
         if (data == null)
+        {
             return;
+        }
+
         data.figure = figure;
         data.sex = sex;
         data.hasSaddle = hasSaddle;
@@ -116,7 +132,9 @@ public class UserDataManager : IUserDataManager
     {
         var data = GetUserDataByIndex(roomObjectId);
         if (data != null)
+        {
             data.petLevel = level;
+        }
     }
 
     /// @see UserDataManager.as::updatePetBreedingStatus
@@ -124,7 +142,10 @@ public class UserDataManager : IUserDataManager
     {
         var data = GetUserDataByIndex(roomObjectId);
         if (data == null)
+        {
             return;
+        }
+
         data.canBreed = canBreed;
         data.canHarvest = canHarvest;
         data.canRevive = canRevive;
@@ -136,7 +157,9 @@ public class UserDataManager : IUserDataManager
     {
         var data = GetUserDataByIndex(roomObjectId);
         if (data != null)
+        {
             data.custom = custom;
+        }
     }
 
     /// @see UserDataManager.as::updateAchievementScore
@@ -144,7 +167,9 @@ public class UserDataManager : IUserDataManager
     {
         var data = GetUserDataByIndex(roomObjectId);
         if (data != null)
+        {
             data.achievementScore = score;
+        }
     }
 
     /// @see UserDataManager.as::updateNameByIndex
@@ -152,7 +177,9 @@ public class UserDataManager : IUserDataManager
     {
         var data = GetUserDataByIndex(roomObjectId);
         if (data != null)
+        {
             data.name = name;
+        }
     }
 
     /// @see UserDataManager.as::getPetUserData
@@ -174,7 +201,10 @@ public class UserDataManager : IUserDataManager
     {
         var ids = new List<int>();
         foreach (var data in _byRoomIndex.Values)
+        {
             ids.Add(data.webID);
+        }
+
         return ids;
     }
 }

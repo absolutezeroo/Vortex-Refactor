@@ -5,6 +5,7 @@ using Vortex.Habbo.Communication.Messages.Incoming.Availability;
 using Vortex.Habbo.Communication.Messages.Incoming.Error;
 using Vortex.Habbo.Communication.Messages.Incoming.Handshake;
 using Vortex.Habbo.Communication.Messages.Incoming.Help;
+using Vortex.Habbo.Communication.Messages.Incoming.Navigator;
 using Vortex.Habbo.Communication.Messages.Incoming.Room.Action;
 using Vortex.Habbo.Communication.Messages.Incoming.Room.Chat;
 using Vortex.Habbo.Communication.Messages.Incoming.Room.Data;
@@ -167,6 +168,9 @@ public class HabboMessages : IMessageConfiguration
 
         // --- Room Data ---
         events[2582] = typeof(GetGuestRoomResultEvent);
+
+        // --- Navigator ---
+        events[3969] = typeof(NavigatorSettingsEvent);
 
         // --- Room Poll ---
         events[1808] = typeof(PollContentsEvent);

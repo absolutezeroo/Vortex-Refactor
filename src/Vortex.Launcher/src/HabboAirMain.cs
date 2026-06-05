@@ -8,6 +8,7 @@ using Godot;
 using Vortex.Core;
 using Vortex.Core.Runtime;
 using Vortex.Core.Runtime.Events;
+using Vortex.Habbo.Room;
 using Vortex.Habbo.Utils;
 using Vortex.IID;
 
@@ -171,7 +172,15 @@ public partial class HabboAirMain : Control
         try
         {
             HabboCoreErrorReporter errorReporter = new();
-            _core = CoreEnvironment.Instantiate(this, CoreEnvironment.CORE_SETUP_FRAME_UPDATE_COMPLEX, errorReporter, safeStr_245);
+
+            // @see HabboAirMain.as::prepareCore — AS3 calls `Core.instantiate(stage, ...)`, rooting
+            // the core (and the window manager's desktop display objects) on the persistent Flash
+            // stage, NOT on the transient loader. HabboAirMain removes itself from the tree once the
+            // core is running and the room engine is ready (see OnExitFrame → Dispose). Rooting the
+            // core on `this` would tear down all rendering on that removal. The Godot equivalent of
+            // Flash's `stage` is the SceneTree root viewport, which survives the loader's removal.
+            Node displayRoot = GetTree().Root;
+            _core = CoreEnvironment.Instantiate(displayRoot, CoreEnvironment.CORE_SETUP_FRAME_UPDATE_COMPLEX, errorReporter, safeStr_245);
             _core.events.AddEventListener(Component.COMPONENT_EVENT_ERROR, OnCoreError);
             _core.events.AddEventListener(Component.COMPONENT_EVENT_REBOOT, OnCoreReboot);
             _core.events.AddEventListener(Component.COMPONENT_EVENT_RUNNING, OnCoreRunning);
@@ -338,7 +347,7 @@ public partial class HabboAirMain : Control
                     component.events.AddEventListener("REE_ENGINE_INITIALIZED", OnRoomEngineReady);
                 }
 
-                if (param2 is HabboBootstrapComponentBase { isInitialized: true })
+                if (param2 is IRoomEngine { IsInitialized: true })
                 {
                     OnRoomEngineReady();
                 }
@@ -362,7 +371,6 @@ public partial class HabboAirMain : Control
         ComponentContext.RegisterManifestAssembly(typeof(HabboTrackingLib).Assembly);                         // Vortex.Bootstrap
         ComponentContext.RegisterManifestAssembly(typeof(IIDCoreCommunicationManager).Assembly);              // Vortex.IID
         ComponentContext.RegisterManifestAssembly(typeof(Habbo.Window.HabboWindowManagerComponent).Assembly); // Vortex.Habbo
-
 
         Type[] componentChain =
         [

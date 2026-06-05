@@ -15,4 +15,10 @@ public class RoomEngineEvent(string type, int roomId)
     public string Type { get; } = type;
 
     public int RoomId { get; } = roomId;
+
+    /// @see RoomEngineEvent.as::type
+    public string type => Type;
+
+    /// @see RoomEngineEvent.as::roomId
+    public int roomId => RoomId;
 }

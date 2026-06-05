@@ -136,12 +136,9 @@ public class ResourceManager : IResourceManager
     }
 
     /// @see ResourceManager.as::resolveAssetName
-    private static string? ResolveAssetName(string param1)
+    private string? ResolveAssetName(string param1)
     {
-        // @see ResourceManager.as — calls _windowManager.interpolate(param1)
-        // Interpolation substitutes ${var} placeholders from configuration.
-        // For now, return as-is (most asset URIs are literal names).
-        return param1;
+        return _windowManager?.context.configuration?.Interpolate(param1) ?? param1;
     }
 
     /// @see ResourceManager.as::removeAsset

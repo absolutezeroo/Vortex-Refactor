@@ -44,6 +44,7 @@ public class HabboWindowManagerComponent : Component, IHabboWindowManager, IInpu
     private object? _themeManager;
 
     private IWindowContext?[]? _windowContextArray;
+    private Viewport? _stageViewport;
 
     /// @see habbo/window/HabboWindowManagerComponent.as::HabboWindowManagerComponent
     public HabboWindowManagerComponent(IContext param1, uint param2 = 0, object? param3 = null) : base(param1, param2, param3)
@@ -431,6 +432,12 @@ public class HabboWindowManagerComponent : Component, IHabboWindowManager, IInpu
     /// @see habbo/window/HabboWindowManagerComponent.as::disposeWindowContexts
     public virtual object? DisposeWindowContexts(params object?[] args)
     {
+        if (_stageViewport != null)
+        {
+            _stageViewport.SizeChanged -= OnViewportSizeChanged;
+            _stageViewport = null;
+        }
+
         if (_windowContextArray != null)
         {
             foreach (IWindowContext? context in _windowContextArray)
@@ -1076,7 +1083,7 @@ public class HabboWindowManagerComponent : Component, IHabboWindowManager, IInpu
 
         _windowContextArray = new IWindowContext?[NUMBER_OF_CONTEXT_LAYERS];
 
-        Rect2 bounds = new(0, 0, 800, 600);
+        Rect2 bounds = GetInitialContextBounds(displayNode);
 
         for (int i = 0;
              i < NUMBER_OF_CONTEXT_LAYERS;
@@ -1106,7 +1113,44 @@ public class HabboWindowManagerComponent : Component, IHabboWindowManager, IInpu
         // @see HabboWindowManagerComponent.as::initComponent — register for frame updates
         context.RegisterUpdateReceiver(this, 0);
 
+        // @see WindowContext.as::stageResizedHandler — connect to Godot viewport resize signal
+        _stageViewport = displayNode?.GetViewport();
+        if (_stageViewport != null)
+        {
+            _stageViewport.SizeChanged += OnViewportSizeChanged;
+            OnViewportSizeChanged();
+        }
+
         _initialized = true;
+    }
+
+    /// @see WindowContext.as::stageResizedHandler
+    private void OnViewportSizeChanged()
+    {
+        if (_windowContextArray == null)
+        {
+            return;
+        }
+
+        foreach (IWindowContext? ctx in _windowContextArray)
+        {
+            if (ctx is WindowContext windowContext)
+            {
+                windowContext.StageResizedHandler(null);
+            }
+        }
+    }
+
+    private static Rect2 GetInitialContextBounds(Node? displayNode)
+    {
+        Vector2 size = displayNode?.GetViewport()?.GetVisibleRect().Size ?? Vector2.Zero;
+
+        if (size.X < 10 || size.Y < 10)
+        {
+            size = new Vector2(800, 600);
+        }
+
+        return new Rect2(0, 0, size.X, size.Y);
     }
 
     private IWindow? CreateCore

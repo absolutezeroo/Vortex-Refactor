@@ -73,6 +73,7 @@ public sealed class CoreComponentContext : ComponentContext, ICore
         var_68 = [];
         var_127 = new uint[NUM_UPDATE_RECEIVER_LEVELS];
         _displayObjectContainer = param1;
+        displayObjectContainer = param1;
         var_507 = param2;
         var_37 = SimpleFrameUpdateHandler;
 

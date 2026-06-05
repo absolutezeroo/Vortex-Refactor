@@ -395,7 +395,8 @@ public class WindowRenderer : IClass3354, IDisposable
 
             if (window is IGraphicContextHost host)
             {
-                IGraphicContext? gc = host.GetGraphicContext(false);
+                // Godot adaptation: create GC on first render (AS3 Sprite was always present).
+                IGraphicContext? gc = host.GetGraphicContext(true);
 
                 // Godot adaptation: wire GC display node into parent's GC hierarchy.
                 // In AS3, Flash's display list handles parent-child Sprite relationships
@@ -495,6 +496,13 @@ public class WindowRenderer : IClass3354, IDisposable
             .Render(
                 window, drawPoint, clipRegion, parentRegion, parentBuffer
             );
+
+        // Godot adaptation: push rendered content to Sprite2D texture after each window renders.
+        // In AS3, Flash composited Sprite children automatically; here we must push explicitly.
+        if (window is IGraphicContextHost renderedWindowHost)
+        {
+            renderedWindowHost.GetGraphicContext(false)?.UpdateDisplayTexture();
+        }
 
         // Recurse into children
         if (window is not IChildWindowHost containerIface)
@@ -612,6 +620,16 @@ public class WindowRenderer : IClass3354, IDisposable
                         {
                             gc.AddChildContext(childGc);
                         }
+
+                        // Godot adaptation: render the child's visual content (background, skin).
+                        // In AS3, Flash rendered these Sprite children automatically via the
+                        // display list; in Godot we must drive rendering explicitly.
+                        Rect2 branch3Region = new(
+                            childDirtyRegion.Position.X - child.x,
+                            childDirtyRegion.Position.Y - child.y,
+                            childDirtyRegion.Size.X, childDirtyRegion.Size.Y
+                        );
+                        RenderWindowBranch(child, branch3Region, parentRegion, childGc.FetchDrawBuffer());
                     }
                 }
                 else if (!childRect.Intersects(parentRegion))

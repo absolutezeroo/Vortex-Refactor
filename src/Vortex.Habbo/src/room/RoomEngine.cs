@@ -144,9 +144,11 @@ public class RoomEngine : Component,
                     new IID.IIDSessionDataManager(), o => _sessionDataManager = o as ISessionDataManager
                 ),
                 // 9. IRoomSessionManager (optional, 2 session events) — TODO: wire when session manager is ported
-                 new ComponentDependency(
-                     new IID.IIDHabboRoomSessionManager(), o => _roomSessionManager = o as IRoomSessionManager
-                     ),
+                new ComponentDependency(
+                    new IID.IIDHabboRoomSessionManager(),
+                    o => _roomSessionManager = o as IRoomSessionManager,
+                    false
+                ),
                 // 10. IHabboToolbar (optional, toolbar click event) — TODO: wire when toolbar is ported
                 // new ComponentDependency(
                 //     new IID.IIDHabboToolbar(), ...
@@ -346,7 +348,6 @@ public class RoomEngine : Component,
         }
 
         _roomContentLoader = new RoomContentLoader("");
-        _roomContentLoader.Initialize(events, this);
         _roomContentLoader.IconAssets = assets as Core.Assets.IAssetLibrary;
         _roomContentLoader.IconListener = this;
         _roomContentLoader.VisualizationFactory = _visualizationFactory;
@@ -370,7 +371,9 @@ public class RoomEngine : Component,
 
         // TODO: _roomContentLoader.SessionDataManager = _sessionDataManager;
 
+        // The current furni-data adaptation can complete synchronously during Initialize().
         events.AddEventListener(RoomContentLoader.CONTENT_LOADER_READY, OnContentLoaderReady);
+        _roomContentLoader.Initialize(events, this);
     }
 
     /// @see com.sulake.habbo.room.RoomEngine::onContentLoaderReady

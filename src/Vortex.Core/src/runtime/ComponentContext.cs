@@ -54,7 +54,7 @@ public class ComponentContext : Component, IContext
     }
 
     /// @see WIN63-202407091256-704579380-Source-main/core/runtime/IContext.as::get displayObjectContainer
-    public object? displayObjectContainer { get; }
+    public object? displayObjectContainer { get; protected set; }
 
     /// @see WIN63-202407091256-704579380-Source-main/core/runtime/ComponentContext.as::purge
     public override void Purge()

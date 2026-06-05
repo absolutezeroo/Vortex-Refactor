@@ -465,6 +465,13 @@ public class Component : IUnknown, ICoreConfiguration, IDisposable
 	/// @see WIN63-202407091256-704579380-Source-main/core/runtime/ICoreConfiguration.as::interpolate
 	public virtual string? Interpolate(string param1)
 	{
+		ICoreConfiguration? rootConfig = _context?.configuration;
+
+		if (rootConfig != null && !ReferenceEquals(rootConfig, this))
+		{
+			return rootConfig.Interpolate(param1);
+		}
+
 		return GetProperty(param1);
 	}
 

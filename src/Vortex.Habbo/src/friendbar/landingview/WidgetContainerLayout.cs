@@ -4,6 +4,7 @@ using System;
 
 using Vortex.Core.Window;
 using Vortex.Core.Window.Components;
+using Vortex.Core.Window.Events;
 
 namespace Vortex.Habbo.FriendBar.LandingView;
 
@@ -18,6 +19,8 @@ public sealed class WidgetContainerLayout : IDisposable
     private string? _layoutName;
     private int _orgWindowWidth;
     private int _orgWindowHeight;
+    private bool _dynamicLayoutActive;
+    private IDesktopWindow? _desktopWindow;
 
     /// @see WidgetContainerLayout.as::WidgetContainerLayout
     public WidgetContainerLayout(HabboLandingView landingView)
@@ -60,6 +63,12 @@ public sealed class WidgetContainerLayout : IDisposable
     /// @see WidgetContainerLayout.as::dispose
     public void Dispose()
     {
+        if (_desktopWindow != null)
+        {
+            _desktopWindow.RemoveEventListener(WindowEvent.WE_RESIZED, OnDesktopResized);
+            _desktopWindow = null;
+        }
+
         _window?.Destroy();
         _window = null;
     }
@@ -89,6 +98,7 @@ public sealed class WidgetContainerLayout : IDisposable
         HideWarningIfPresent();
         SetOrgWindowSize();
         SetupBottomSlotWidgetName();
+        _dynamicLayoutActive = _window.FindChildByName("placeholder_dynamic_widget_slots") != null;
     }
 
     /// @see WidgetContainerLayout.as::hideWarningIfPresent
@@ -149,23 +159,10 @@ public sealed class WidgetContainerLayout : IDisposable
             }
         }
 
-        return HasDynamicLandingViewData() ? DEFAULT_LAYOUT : GENERIC_RECEPTION_LAYOUT;
+        return DEFAULT_LAYOUT;
     }
 
-    private bool HasDynamicLandingViewData()
-    {
-        for (int slot = 1; slot <= 6; slot++)
-        {
-            if (_landingView.PropertyExists("landing.view.dynamic.slot." + slot + ".widget"))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /// @see WidgetContainerLayout.as::resizeCustomLayout
+    /// @see WidgetContainerLayout.as::resizeWindow
     private void ResizeWindow()
     {
         if (_window == null)
@@ -179,6 +176,40 @@ public sealed class WidgetContainerLayout : IDisposable
         IDesktopWindow? desktop = _landingView.WindowManager.GetWindowContext(HabboLandingView.LANDING_VIEW_LAYER)?.GetDesktopWindow();
 
         if (desktop == null)
+        {
+            return;
+        }
+
+        if (_dynamicLayoutActive)
+        {
+            ResizeDynamicLayout(desktop);
+        }
+        else
+        {
+            ResizeCustomLayout(desktop);
+        }
+
+        _window.Invalidate();
+    }
+
+    /// @see WidgetContainerLayout.as::resizeDynamicLayout
+    private void ResizeDynamicLayout(IDesktopWindow desktop)
+    {
+        if (_window == null)
+        {
+            return;
+        }
+
+        _window.x = 0;
+        _window.y = 0;
+        _window.width = desktop.rectangle.Size.X;
+        _window.height = desktop.rectangle.Size.Y;
+    }
+
+    /// @see WidgetContainerLayout.as::resizeCustomLayout
+    private void ResizeCustomLayout(IDesktopWindow desktop)
+    {
+        if (_window == null)
         {
             return;
         }
@@ -219,9 +250,31 @@ public sealed class WidgetContainerLayout : IDisposable
 
         if (_window.parent != null)
         {
+            RegisterDesktopResize(desktop);
             return;
         }
 
         desktop.AddChild(_window);
+        RegisterDesktopResize(desktop);
+    }
+
+    private void RegisterDesktopResize(IDesktopWindow desktop)
+    {
+        if (_desktopWindow == desktop)
+        {
+            return;
+        }
+
+        _desktopWindow?.RemoveEventListener(WindowEvent.WE_RESIZED, OnDesktopResized);
+        _desktopWindow = desktop;
+        _desktopWindow.AddEventListener(WindowEvent.WE_RESIZED, OnDesktopResized);
+    }
+
+    private void OnDesktopResized(WindowEvent ev, IWindow window)
+    {
+        _ = ev;
+        _ = window;
+
+        ResizeWindow();
     }
 }

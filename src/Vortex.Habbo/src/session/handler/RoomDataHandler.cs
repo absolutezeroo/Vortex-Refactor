@@ -26,7 +26,7 @@ public class RoomDataHandler : BaseHandler
     /// @see RoomDataHandler.as::onRoomResult
     private void OnRoomResult(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as GetGuestRoomResultMessageEventParser;
+        GetGuestRoomResultMessageEventParser? parser = (ev as MessageEvent)?.parser as GetGuestRoomResultMessageEventParser;
         if (parser == null)
         {
             return;
@@ -37,7 +37,7 @@ public class RoomDataHandler : BaseHandler
             return;
         }
 
-        var session = listener?.GetSession(parser.RoomId);
+        IRoomSession? session = listener?.GetSession(parser.RoomId);
         if (session == null)
         {
             return;

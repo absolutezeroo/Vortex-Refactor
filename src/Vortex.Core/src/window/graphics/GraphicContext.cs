@@ -167,7 +167,10 @@ public class GraphicContext : IGraphicContext, IDisposable
     }
 
     /// @see GraphicContext.as::setDrawRegion — stores clipRegion and configures Godot clip mode
-    public Image? SetDrawRegion(Rect2 region, bool reallocate, Rect2? clipRegion)
+    /// Godot adaptation: localPosition overrides display node position to local (parent-relative)
+    /// coordinates. Without it the screen-space renderingRectangle would be used, causing
+    /// double-offset for windows nested inside a parent GC hierarchy.
+    public Image? SetDrawRegion(Rect2 region, bool reallocate, Rect2? clipRegion, Vector2? localPosition = null)
     {
         Image? buffer = null;
 
@@ -183,7 +186,7 @@ public class GraphicContext : IGraphicContext, IDisposable
 
         _rectangle = region;
         _clipRegion = clipRegion;
-        _displayNode.Position = new Vector2(region.Position.X, region.Position.Y);
+        _displayNode.Position = localPosition ?? new Vector2(region.Position.X, region.Position.Y);
 
         // @see GraphicContext.as — apply clip mask via Godot's ClipChildren
         if (clipRegion.HasValue)

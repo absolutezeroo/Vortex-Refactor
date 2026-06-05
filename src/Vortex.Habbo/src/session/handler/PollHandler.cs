@@ -28,19 +28,19 @@ public class PollHandler : BaseHandler
     /// @see PollHandler.as::onPollOfferEvent
     private void OnPollOffer(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as PollOfferMessageEventParser;
+        PollOfferMessageEventParser? parser = (ev as MessageEvent)?.parser as PollOfferMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
         }
 
-        var pollEvent = new RoomSessionPollEvent(RoomSessionPollEvent.OFFER, session, parser.Id)
+        RoomSessionPollEvent pollEvent = new RoomSessionPollEvent(RoomSessionPollEvent.OFFER, session, parser.Id)
         {
             headline = parser.Headline,
             summary = parser.Summary,
@@ -51,7 +51,7 @@ public class PollHandler : BaseHandler
     /// @see PollHandler.as::onPollErrorEvent
     private void OnPollError(IMessageEvent ev)
     {
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -63,19 +63,19 @@ public class PollHandler : BaseHandler
     /// @see PollHandler.as::onPollContentsEvent
     private void OnPollContents(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as PollContentsMessageEventParser;
+        PollContentsMessageEventParser? parser = (ev as MessageEvent)?.parser as PollContentsMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
         }
 
-        var pollEvent = new RoomSessionPollEvent(RoomSessionPollEvent.CONTENT, session, parser.Id)
+        RoomSessionPollEvent pollEvent = new RoomSessionPollEvent(RoomSessionPollEvent.CONTENT, session, parser.Id)
         {
             startMessage  = parser.StartMessage ?? "",
             endMessage    = parser.EndMessage ?? "",

@@ -6,10 +6,10 @@
 
 #====== LIVE ENVIRONMENTS ======
 
-connection.info.name.en=Rust
+connection.info.name.en=Vortex
 connection.info.host.en=127.0.0.1
 connection.info.port.en=30000
-url.prefix.en=http://vortex-assets.local/
+url.prefix.en=http://vortex-assets.local
 pocket.api.en=http://vortex-assets.local/
 web.api.en=http://vortex-assets.local/
 facebook.application.id.en=1417574575138432
@@ -29,18 +29,18 @@ monitor.garbage.collection=false
 performancetest.distribution.enabled=false
 
 hotelview.banner.url=${url.prefix}/gamedata/supersecret
-external.variables.txt=${url.prefix}/gamedata/external_variables.txt
-external.texts.txt=${url.prefix}/gamedata/external_flash_texts.txt
+external.variables.txt=${url.prefix}/gamedata/external_variables/1
+external.texts.txt=${url.prefix}/gamedata/external_flash_texts/1
 
 gamedata.hashes.url=${url.prefix}/gamedata/hashes.json
 
-client.fatal.error.url=${url.prefix}/flash_client_error
+client.fatal.error.url=${url.prefix}/vortex_client_error
 client.connection.failed.url=${url.prefix}/client_connection_failed
 
 flash.dynamic.icon.download.name.template=%revision%/%typeid%%param%_icon.png
 
-landing.view.background_left.uri=https://images.habbo.com/c_images/reception/jan21_background_left.png
-landing.view.background_right.uri=https://images.habbo.com/c_images/reception/background_right_easter2016.png
+landing.view.background_left.uri=${url.prefix}/c_images/reception/habbo20_background_left.png
+landing.view.background_right.uri=${url.prefix}/c_images/reception/background_right_easter2016.png
 
 game.center.default_game=snowwar
 game.center.enabled.forStaff=false

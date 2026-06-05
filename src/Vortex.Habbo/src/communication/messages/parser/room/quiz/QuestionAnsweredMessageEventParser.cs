@@ -25,7 +25,7 @@ public class QuestionAnsweredMessageEventParser : IMessageParser
         UserId = param1.ReadInteger();
         Value = param1.ReadString();
         int count = param1.ReadInteger();
-        var counts = new Dictionary<string, int>(count);
+        Dictionary<string, int> counts = new Dictionary<string, int>(count);
         for (int i = 0; i < count; i++)
         {
             string key = param1.ReadString();

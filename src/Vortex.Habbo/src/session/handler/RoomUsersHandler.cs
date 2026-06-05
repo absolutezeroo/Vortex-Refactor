@@ -50,34 +50,34 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onUsers
     private void OnUsers(IMessageEvent ev)
     {
-        var usersEv = ev as UsersMessageEvent;
+        UsersMessageEvent? usersEv = ev as UsersMessageEvent;
         if (usersEv == null)
         {
             return;
         }
 
-        var parser = usersEv.parser as UsersMessageEventParser;
+        UsersMessageEventParser? parser = usersEv.parser as UsersMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
         }
 
-        var addedUsers = new List<IUserData>();
+        List<IUserData> addedUsers = new List<IUserData>();
         for (int i = 0; i < parser.UserCount; i++)
         {
-            var msg = parser.GetUser(i);
+            UserMessageData? msg = parser.GetUser(i);
             if (msg == null)
             {
                 continue;
             }
 
-            var userData = new UserData(msg.RoomIndex)
+            UserData userData = new UserData(msg.RoomIndex)
             {
                 name = msg.Name,
                 custom = msg.Custom,
@@ -115,19 +115,19 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onUserRemove
     private void OnUserRemove(IMessageEvent ev)
     {
-        var removeEv = ev as UserRemoveMessageEvent;
+        UserRemoveMessageEvent? removeEv = ev as UserRemoveMessageEvent;
         if (removeEv == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
         }
 
-        var parser = removeEv.parser as UserRemoveMessageEventParser;
+        UserRemoveMessageEventParser? parser = removeEv.parser as UserRemoveMessageEventParser;
         if (parser == null)
         {
             return;
@@ -139,13 +139,13 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onUserBadges
     private void OnUserBadges(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as HabboUserBadgesMessageEventParser;
+        HabboUserBadgesMessageEventParser? parser = (ev as MessageEvent)?.parser as HabboUserBadgesMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -157,13 +157,13 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onDoorbell
     private void OnDoorbell(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as DoorbellMessageEventParser;
+        DoorbellMessageEventParser? parser = (ev as MessageEvent)?.parser as DoorbellMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -175,13 +175,13 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onUserChange
     private void OnUserChange(IMessageEvent ev)
     {
-        var changeEv = ev as UserChangeMessageEvent;
+        UserChangeMessageEvent? changeEv = ev as UserChangeMessageEvent;
         if (changeEv == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -200,19 +200,19 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onUserNameChanged
     private void OnUserNameChanged(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as UserNameChangedMessageEventParser;
+        UserNameChangedMessageEventParser? parser = (ev as MessageEvent)?.parser as UserNameChangedMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
         }
 
-        var userData = session.userDataManager.GetUserDataByIndex(parser.RoomIndex);
+        IUserData? userData = session.userDataManager.GetUserDataByIndex(parser.RoomIndex);
         if (userData != null)
         {
             userData.name = parser.NewName ?? userData.name;
@@ -222,13 +222,13 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onPetInfo
     private void OnPetInfo(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as PetInfoMessageEventParser;
+        PetInfoMessageEventParser? parser = (ev as MessageEvent)?.parser as PetInfoMessageEventParser;
         if (parser?.PetInfo == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -240,13 +240,13 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onPetCommands
     private void OnPetCommands(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as PetCommandsMessageEventParser;
+        PetCommandsMessageEventParser? parser = (ev as MessageEvent)?.parser as PetCommandsMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -266,19 +266,19 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onPetFigureUpdate
     private void OnPetFigureUpdate(IMessageEvent ev)
     {
-        var petEv = ev as PetFigureUpdateEvent;
+        PetFigureUpdateEvent? petEv = ev as PetFigureUpdateEvent;
         if (petEv == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
         }
 
-        var parser = petEv.parser as PetFigureUpdateMessageEventParser;
+        PetFigureUpdateMessageEventParser? parser = petEv.parser as PetFigureUpdateMessageEventParser;
         if (parser == null)
         {
             return;
@@ -291,13 +291,13 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onPetBreedingResult
     private void OnPetBreedingResult(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as PetBreedingResultMessageEventParser;
+        PetBreedingResultMessageEventParser? parser = (ev as MessageEvent)?.parser as PetBreedingResultMessageEventParser;
         if (parser?.OwnResult == null || parser.OtherResult == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -310,13 +310,13 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onPetBreeding
     private void OnPetBreeding(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as PetBreedingMessageEventParser;
+        PetBreedingMessageEventParser? parser = (ev as MessageEvent)?.parser as PetBreedingMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -329,13 +329,13 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onPetStatusUpdate
     private void OnPetStatusUpdate(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as PetStatusUpdateMessageEventParser;
+        PetStatusUpdateMessageEventParser? parser = (ev as MessageEvent)?.parser as PetStatusUpdateMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -348,13 +348,13 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onPetLevelUpdate
     private void OnPetLevelUpdate(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as PetLevelUpdateMessageEventParser;
+        PetLevelUpdateMessageEventParser? parser = (ev as MessageEvent)?.parser as PetLevelUpdateMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -366,13 +366,13 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onConfirmBreedingRequest
     private void OnConfirmBreedingRequest(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as ConfirmBreedingRequestMessageEventParser;
+        ConfirmBreedingRequestMessageEventParser? parser = (ev as MessageEvent)?.parser as ConfirmBreedingRequestMessageEventParser;
         if (parser?.Pet1 == null || parser.Pet2 == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -385,13 +385,13 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onConfirmBreedingResult
     private void OnConfirmBreedingResult(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as ConfirmBreedingResultMessageEventParser;
+        ConfirmBreedingResultMessageEventParser? parser = (ev as MessageEvent)?.parser as ConfirmBreedingResultMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -404,13 +404,13 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onNestBreedingSuccess
     private void OnNestBreedingSuccess(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as NestBreedingSuccessMessageEventParser;
+        NestBreedingSuccessMessageEventParser? parser = (ev as MessageEvent)?.parser as NestBreedingSuccessMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -429,13 +429,13 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onNewFriendRequest
     private void OnNewFriendRequest(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as NewFriendRequestMessageEventParser;
+        NewFriendRequestMessageEventParser? parser = (ev as MessageEvent)?.parser as NewFriendRequestMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -448,13 +448,13 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onDance
     private void OnDance(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as DanceMessageEventParser;
+        DanceMessageEventParser? parser = (ev as MessageEvent)?.parser as DanceMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -466,19 +466,19 @@ public class RoomUsersHandler : BaseHandler
     /// @see RoomUsersHandler.as::onFavoriteMembershipUpdate
     private void OnFavoriteMembershipUpdate(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as FavoriteMembershipUpdateMessageEventParser;
+        FavoriteMembershipUpdateMessageEventParser? parser = (ev as MessageEvent)?.parser as FavoriteMembershipUpdateMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
         }
 
-        var userData = session.userDataManager.GetUserDataByIndex(parser.RoomIndex);
+        IUserData? userData = session.userDataManager.GetUserDataByIndex(parser.RoomIndex);
         if (userData == null)
         {
             return;

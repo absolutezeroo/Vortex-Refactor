@@ -31,7 +31,7 @@ public class ConfirmBreedingRequestMessageEventParser : IMessageParser
         Pet1 = new BreedingPetInfo(param1);
         Pet2 = new BreedingPetInfo(param1);
         int count = param1.ReadInteger();
-        var cats = new List<int>(count);
+        List<int> cats = new List<int>(count);
         for (int i = 0; i < count; i++)
         {
             cats.Add(param1.ReadInteger());

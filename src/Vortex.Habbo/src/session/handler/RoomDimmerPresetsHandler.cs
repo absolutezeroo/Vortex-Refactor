@@ -26,29 +26,29 @@ public class RoomDimmerPresetsHandler : BaseHandler
     /// @see RoomDimmerPresetsHandler.as::onRoomDimmerPresets
     private void OnRoomDimmerPresets(IMessageEvent ev)
     {
-        var dimmerEv = ev as RoomDimmerPresetsMessageEvent;
+        RoomDimmerPresetsMessageEvent? dimmerEv = ev as RoomDimmerPresetsMessageEvent;
         if (dimmerEv == null)
         {
             return;
         }
 
-        var parser = dimmerEv.parser as RoomDimmerPresetsMessageEventParser;
+        RoomDimmerPresetsMessageEventParser? parser = dimmerEv.parser as RoomDimmerPresetsMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
         }
 
-        var presetsEvent = new RoomSessionDimmerPresetsEvent(RoomSessionDimmerPresetsEvent.ROOM_DIMMER_PRESETS, session);
+        RoomSessionDimmerPresetsEvent presetsEvent = new RoomSessionDimmerPresetsEvent(RoomSessionDimmerPresetsEvent.ROOM_DIMMER_PRESETS, session);
         presetsEvent.selectedPresetId = parser.SelectedPresetId;
         for (int i = 0; i < parser.PresetCount; i++)
         {
-            var preset = parser.GetPreset(i);
+            RoomDimmerPresetsMessageData? preset = parser.GetPreset(i);
             if (preset != null)
             {
                 presetsEvent.StorePreset(preset.Id, preset.Type, preset.Color, preset.Light);

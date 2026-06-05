@@ -2,6 +2,7 @@
 
 using Vortex.Core.Communication.Messages;
 using Vortex.Core.Runtime;
+using Vortex.Habbo.Communication;
 using Vortex.Habbo.Communication.Messages.Incoming.Users;
 
 namespace Vortex.Habbo.Session;
@@ -23,7 +24,7 @@ public class IgnoredUsersManager : IDisposable
     {
         _sessionDataManager = sessionDataManager;
 
-        var comm = _sessionDataManager.communication;
+        IHabboCommunicationManager? comm = _sessionDataManager.communication;
         if (comm != null)
         {
             _ignoreResultEvent = comm.AddHabboConnectionMessageEvent(
@@ -45,7 +46,7 @@ public class IgnoredUsersManager : IDisposable
             return;
         }
 
-        var comm = _sessionDataManager.communication;
+        IHabboCommunicationManager? comm = _sessionDataManager.communication;
         if (comm != null)
         {
             if (_ignoreResultEvent != null)

@@ -310,6 +310,14 @@ public class HabboCommunicationManager : Component, IHabboCommunicationManager, 
         {
             var_34 = var_34[^150..];
         }
+
+        if (PacketLogger.Enabled && int.TryParse(param1, out int id))
+        {
+            if (_messages.events.TryGetValue(id, out System.Type? t))
+                PacketLogger.LogIncoming(id, t.Name);
+            else
+                PacketLogger.LogUnknownIncoming(id);
+        }
     }
 
     /// @see WIN63-202407091256-704579380-Source-main/habbo/communication/HabboCommunicationManager.as::messageSent
@@ -330,6 +338,12 @@ public class HabboCommunicationManager : Component, IHabboCommunicationManager, 
         {
             var_34 = var_34[^150..];
         }
+
+        if (PacketLogger.Enabled && int.TryParse(param1, out int id))
+        {
+            string name = _messages.composers.TryGetValue(id, out System.Type? t) ? t.Name : "Unknown";
+            PacketLogger.LogOutgoing(id, name);
+        }
     }
 
     /// @see WIN63-202407091256-704579380-Source-main/habbo/communication/HabboCommunicationManager.as::messageParseError
@@ -337,6 +351,13 @@ public class HabboCommunicationManager : Component, IHabboCommunicationManager, 
     {
         ErrorReportStorage.SetParameter("sent_msg_data", param1.ToString() ?? string.Empty);
         ErrorReportStorage.AddDebugData("MESSAGE_QUEUE", var_34);
+
+        if (PacketLogger.Enabled)
+        {
+            int id = param1.GetId();
+            string name = _messages.events.TryGetValue(id, out System.Type? t) ? t.Name : "Unknown";
+            PacketLogger.LogParseError(id, name);
+        }
     }
 
     /// @see WIN63-202407091256-704579380-Source-main/habbo/communication/IHabboCommunicationManager.as::setMessageQueueErrorDebugData

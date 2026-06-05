@@ -13,13 +13,15 @@ using Vortex.Room.Events;
 using Vortex.Room.Object;
 using Vortex.Room.Object.Visualization.Utils;
 using Vortex.Habbo.Room.Object;
+using Vortex.Habbo.Session;
+using Vortex.Habbo.Session.Furniture;
 
 using IRoomObjectVisualizationFactory = Vortex.Room.Object.IRoomObjectVisualizationFactory;
 
 namespace Vortex.Habbo.Room;
 
 /// @see com.sulake.habbo.room.RoomContentLoader
-public class RoomContentLoader : IRoomContentLoader
+public class RoomContentLoader : IRoomContentLoader, IFurniDataListener
 {
     public const string CONTENT_LOADER_READY = "RCL_LOADER_READY";
 
@@ -77,6 +79,23 @@ public class RoomContentLoader : IRoomContentLoader
     private ICoreConfiguration? _configuration;
     private string[]? _ignoredFurniTypes;
     private IRoomObjectVisualizationFactory? _visualizationFactory;
+    private ISessionDataManager? _sessionDataManager;
+
+    /// @see com.sulake.habbo.room.RoomContentLoader — set from RoomEngine after session data manager is ready
+    public ISessionDataManager? SessionDataManager
+    {
+        get => _sessionDataManager;
+        set
+        {
+            _sessionDataManager = value;
+
+            if (_deferredFurniData)
+            {
+                _deferredFurniData = false;
+                InitFurnitureData();
+            }
+        }
+    }
 
     /// @see com.sulake.habbo.room.RoomContentLoader::RoomContentLoader
     public RoomContentLoader(string baseUrl)
@@ -826,12 +845,95 @@ public class RoomContentLoader : IRoomContentLoader
     /// @see com.sulake.habbo.room.RoomContentLoader::initFurnitureData
     private void InitFurnitureData()
     {
-        // TODO: When ISessionDataManager is ported, call getFurniData(this)
-        // For now, mark as populated and continue initialization
-        _deferredFurniData = false;
+        if (SessionDataManager == null)
+        {
+            _deferredFurniData = true;
+            return;
+        }
+
+        IFurnitureData[]? furniData = SessionDataManager.GetFurniData(this);
+
+        if (furniData == null)
+        {
+            return;
+        }
+
+        SessionDataManager.RemoveFurniDataListener(this);
+        PopulateFurniData(furniData);
         _furniDataPopulated = true;
         ParseIgnoredFurniTypes();
         ContinueInitialization();
+    }
+
+    /// @see com.sulake.habbo.room.RoomContentLoader::furniDataReady
+    public void FurniDataReceived()
+    {
+        InitFurnitureData();
+    }
+
+    /// @see com.sulake.habbo.room.RoomContentLoader::populateFurniData
+    private void PopulateFurniData(IEnumerable<IFurnitureData> furniData)
+    {
+        foreach (IFurnitureData data in furniData)
+        {
+            int id = data.id;
+            string className = data.className;
+
+            if (data.hasIndexedColor)
+            {
+                className += "*" + data.colourIndex.ToString(CultureInfo.InvariantCulture);
+            }
+
+            int revision = data.revision;
+            string adUrl = data.adUrl;
+
+            if (!string.IsNullOrEmpty(adUrl))
+            {
+                _adUrls![className] = adUrl;
+            }
+
+            string revisionKey = data.className;
+
+            if (data.type == "s")
+            {
+                _floorItemIdToType![id] = className;
+                _floorItemTypeToId![className] = id;
+
+                if (!_floorItems!.ContainsKey(revisionKey))
+                {
+                    _floorItems[revisionKey] = 1;
+                }
+            }
+            else if (data.type == "i")
+            {
+                if (className == "post.it")
+                {
+                    className = "post_it";
+                    revisionKey = "post_it";
+                }
+
+                if (className == "post.it.vd")
+                {
+                    className = "post_it_vd";
+                    revisionKey = "post_it_vd";
+                }
+
+                _wallItemIdToType![id] = className;
+                _wallItemTypeToId![className] = id;
+
+                if (!_wallItems!.ContainsKey(revisionKey))
+                {
+                    _wallItems[revisionKey] = 1;
+                }
+            }
+
+            _typeRevisions!.TryGetValue(revisionKey, out int previousRevision);
+
+            if (revision > previousRevision)
+            {
+                _typeRevisions[revisionKey] = revision;
+            }
+        }
     }
 
     /// @see com.sulake.habbo.room.RoomContentLoader::parseIgnoredFurniTypes

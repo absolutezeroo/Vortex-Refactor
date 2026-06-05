@@ -22,7 +22,7 @@ public class QuestionFinishedMessageEventParser : IMessageParser
         // TODO(as3-port): verify wire format order from AS3 source — QuestionFinishedParser
         QuestionId = param1.ReadInteger();
         int count = param1.ReadInteger();
-        var counts = new Dictionary<string, int>(count);
+        Dictionary<string, int> counts = new Dictionary<string, int>(count);
         for (int i = 0; i < count; i++)
         {
             string key = param1.ReadString();

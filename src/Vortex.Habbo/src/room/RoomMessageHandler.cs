@@ -360,7 +360,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as RoomReadyMessageEventParser;
+        RoomReadyMessageEventParser? parser = e.parser as RoomReadyMessageEventParser;
         if (parser == null)
         {
             return;
@@ -392,7 +392,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as FurnitureAliasesMessageEventParser;
+        FurnitureAliasesMessageEventParser? parser = e.parser as FurnitureAliasesMessageEventParser;
         if (parser == null)
         {
             return;
@@ -429,7 +429,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as HeightMapMessageEventParser;
+        HeightMapMessageEventParser? parser = e.parser as HeightMapMessageEventParser;
         if (parser == null)
         {
             return;
@@ -468,7 +468,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as HeightMapUpdateMessageEventParser;
+        HeightMapUpdateMessageEventParser? parser = e.parser as HeightMapUpdateMessageEventParser;
         if (parser == null)
         {
             return;
@@ -509,7 +509,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as FloorHeightMapMessageEventParser;
+        FloorHeightMapMessageEventParser? parser = e.parser as FloorHeightMapMessageEventParser;
         if (parser == null)
         {
             return;
@@ -633,7 +633,7 @@ public class RoomMessageHandler : IDisposable
         // Process area hide data
         if (parser.AreaHideData != null)
         {
-            foreach (var hideData in parser.AreaHideData)
+            foreach (AreaHideMessageData hideData in parser.AreaHideData)
             {
                 _roomCreator.UpdateAreaHide(_currentRoomId, hideData.Id, hideData.IsHidden,
                     hideData.RootX, hideData.RootY, hideData.Width, hideData.Height, hideData.InvertArea);
@@ -649,7 +649,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as RoomVisualizationSettingsEventParser;
+        RoomVisualizationSettingsEventParser? parser = e.parser as RoomVisualizationSettingsEventParser;
         if (parser == null)
         {
             return;
@@ -671,7 +671,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as RoomPropertyMessageEventParser;
+        RoomPropertyMessageEventParser? parser = e.parser as RoomPropertyMessageEventParser;
         if (parser == null)
         {
             return;
@@ -693,7 +693,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as ObjectsMessageEventParser;
+        ObjectsMessageEventParser? parser = e.parser as ObjectsMessageEventParser;
         if (parser == null)
         {
             return;
@@ -717,7 +717,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as ObjectAddMessageEventParser;
+        ObjectAddMessageEventParser? parser = e.parser as ObjectAddMessageEventParser;
         if (parser?.Data == null)
         {
             return;
@@ -734,7 +734,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as ObjectUpdateMessageEventParser;
+        ObjectUpdateMessageEventParser? parser = e.parser as ObjectUpdateMessageEventParser;
         ObjectMessageData? data = parser?.Data;
         if (data == null)
         {
@@ -758,7 +758,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as ObjectDataUpdateMessageEventParser;
+        ObjectDataUpdateMessageEventParser? parser = e.parser as ObjectDataUpdateMessageEventParser;
         if (parser == null)
         {
             return;
@@ -776,7 +776,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as ObjectsDataUpdateMessageEventParser;
+        ObjectsDataUpdateMessageEventParser? parser = e.parser as ObjectsDataUpdateMessageEventParser;
         if (parser == null)
         {
             return;
@@ -801,7 +801,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as ObjectRemoveMessageEventParser;
+        ObjectRemoveMessageEventParser? parser = e.parser as ObjectRemoveMessageEventParser;
         if (parser == null)
         {
             return;
@@ -832,7 +832,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as ObjectRemoveMultipleMessageEventParser;
+        ObjectRemoveMultipleMessageEventParser? parser = e.parser as ObjectRemoveMultipleMessageEventParser;
         if (parser == null)
         {
             return;
@@ -858,7 +858,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as ItemsMessageEventParser;
+        ItemsMessageEventParser? parser = e.parser as ItemsMessageEventParser;
         if (parser == null)
         {
             return;
@@ -882,7 +882,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as ItemAddMessageEventParser;
+        ItemAddMessageEventParser? parser = e.parser as ItemAddMessageEventParser;
         if (parser?.Data == null)
         {
             return;
@@ -899,7 +899,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as ItemRemoveMessageEventParser;
+        ItemRemoveMessageEventParser? parser = e.parser as ItemRemoveMessageEventParser;
         if (parser == null)
         {
             return;
@@ -916,7 +916,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as ItemUpdateMessageEventParser;
+        ItemUpdateMessageEventParser? parser = e.parser as ItemUpdateMessageEventParser;
         ItemMessageData? data = parser?.Data;
         if (data == null)
         {
@@ -946,7 +946,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as ItemStateUpdateMessageEventParser;
+        ItemStateUpdateMessageEventParser? parser = e.parser as ItemStateUpdateMessageEventParser;
         if (parser == null)
         {
             return;
@@ -963,7 +963,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as ItemsStateUpdateMessageEventParser;
+        ItemsStateUpdateMessageEventParser? parser = e.parser as ItemsStateUpdateMessageEventParser;
         if (parser == null)
         {
             return;
@@ -987,7 +987,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as ItemDataUpdateMessageEventParser;
+        ItemDataUpdateMessageEventParser? parser = e.parser as ItemDataUpdateMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1003,7 +1003,7 @@ public class RoomMessageHandler : IDisposable
     /// @see com.sulake.habbo.room.RoomMessageHandler::onOwnUserEvent
     private void OnOwnUserEvent(IMessageEvent e)
     {
-        var parser = e.parser as UserObjectMessageEventParser;
+        UserObjectMessageEventParser? parser = e.parser as UserObjectMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1020,7 +1020,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as PetFigureUpdateMessageEventParser;
+        PetFigureUpdateMessageEventParser? parser = e.parser as PetFigureUpdateMessageEventParser;
         if (parser?.figureData == null)
         {
             return;
@@ -1038,7 +1038,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as UsersMessageEventParser;
+        UsersMessageEventParser? parser = e.parser as UsersMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1095,7 +1095,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as UserUpdateMessageEventParser;
+        UserUpdateMessageEventParser? parser = e.parser as UserUpdateMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1138,7 +1138,7 @@ public class RoomMessageHandler : IDisposable
             bool isSwimming = false;
             bool updatePosture = true;
 
-            foreach (var action in data.Actions)
+            foreach (AvatarActionMessageData action in data.Actions)
             {
                 switch (action.ActionType)
                 {
@@ -1216,7 +1216,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as UserRemoveMessageEventParser;
+        UserRemoveMessageEventParser? parser = e.parser as UserRemoveMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1234,7 +1234,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as UserChangeMessageEventParser;
+        UserChangeMessageEventParser? parser = e.parser as UserChangeMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1255,7 +1255,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as PetExperienceMessageEventParser;
+        PetExperienceMessageEventParser? parser = e.parser as PetExperienceMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1273,7 +1273,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as ExpressionMessageEventParser;
+        ExpressionMessageEventParser? parser = e.parser as ExpressionMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1291,7 +1291,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as DanceMessageEventParser;
+        DanceMessageEventParser? parser = e.parser as DanceMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1309,7 +1309,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as AvatarEffectMessageEventParser;
+        AvatarEffectMessageEventParser? parser = e.parser as AvatarEffectMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1327,7 +1327,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as SleepMessageEventParser;
+        SleepMessageEventParser? parser = e.parser as SleepMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1345,7 +1345,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as CarryObjectMessageEventParser;
+        CarryObjectMessageEventParser? parser = e.parser as CarryObjectMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1363,7 +1363,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as UseObjectMessageEventParser;
+        UseObjectMessageEventParser? parser = e.parser as UseObjectMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1385,7 +1385,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as ChatMessageEventParser;
+        ChatMessageEventParser? parser = e.parser as ChatMessageEventParser;
         if (parser == null)
         {
             // Try whisper/shout parsers which share the same base shape
@@ -1422,7 +1422,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as UserTypingMessageEventParser;
+        UserTypingMessageEventParser? parser = e.parser as UserTypingMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1444,7 +1444,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as SlideObjectBundleMessageEventParser;
+        SlideObjectBundleMessageEventParser? parser = e.parser as SlideObjectBundleMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1456,7 +1456,7 @@ public class RoomMessageHandler : IDisposable
         _roomCreator.UpdateObjectFurniture(_currentRoomId, parser.Id,
             new Vector3d(), new Vector3d(), 2, new LegacyStuffData());
 
-        foreach (var obj in parser.ObjectList)
+        foreach (SlideObjectMessageData obj in parser.ObjectList)
         {
             _roomCreator.UpdateObjectFurnitureLocation(_currentRoomId, obj.Id,
                 obj.Loc, null, obj.Target);
@@ -1464,7 +1464,7 @@ public class RoomMessageHandler : IDisposable
 
         if (parser.Avatar != null)
         {
-            var avatar = parser.Avatar;
+            SlideObjectMessageData? avatar = parser.Avatar;
             _roomCreator.UpdateObjectUser(_currentRoomId, avatar.Id,
                 avatar.Loc, new Vector3d(), targetLocation: avatar.Target, isSlide: true);
             SetUserMovePosture(avatar.Id, avatar.MoveType ?? "");
@@ -1479,28 +1479,28 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as WiredMovementsMessageEventParser;
+        WiredMovementsMessageEventParser? parser = e.parser as WiredMovementsMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        foreach (var userMove in parser.UserMoves)
+        foreach (WiredUserMoveData userMove in parser.UserMoves)
         {
             OnWiredUserMove(userMove);
         }
 
-        foreach (var furniMove in parser.FurniMoves)
+        foreach (WiredFurniMoveData furniMove in parser.FurniMoves)
         {
             OnWiredFurniMove(furniMove);
         }
 
-        foreach (var wallItemMove in parser.WallItemMoves)
+        foreach (WiredWallItemMoveData wallItemMove in parser.WallItemMoves)
         {
             OnWiredWallItemMove(wallItemMove);
         }
 
-        foreach (var dirUpdate in parser.UserDirectionUpdates)
+        foreach (WiredUserDirUpdateData dirUpdate in parser.UserDirectionUpdates)
         {
             OnUserDirectionUpdate(dirUpdate);
         }
@@ -1588,7 +1588,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as DiceValueMessageEventParser;
+        DiceValueMessageEventParser? parser = e.parser as DiceValueMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1607,7 +1607,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as OneWayDoorStatusMessageEventParser;
+        OneWayDoorStatusMessageEventParser? parser = e.parser as OneWayDoorStatusMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1630,7 +1630,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as YouArePlayingGameMessageEventParser;
+        YouArePlayingGameMessageEventParser? parser = e.parser as YouArePlayingGameMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1647,7 +1647,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as YouAreNotSpectatorMessageEventParser;
+        YouAreNotSpectatorMessageEventParser? parser = e.parser as YouAreNotSpectatorMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1670,7 +1670,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as HanditemConfigurationMessageEventParser;
+        HanditemConfigurationMessageEventParser? parser = e.parser as HanditemConfigurationMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1687,7 +1687,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as GamePlayerValueMessageEventParser;
+        GamePlayerValueMessageEventParser? parser = e.parser as GamePlayerValueMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1705,7 +1705,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as SpecialRoomEffectMessageEventParser;
+        SpecialRoomEffectMessageEventParser? parser = e.parser as SpecialRoomEffectMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1772,7 +1772,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as IgnoreResultMessageEventParser;
+        IgnoreResultMessageEventParser? parser = e.parser as IgnoreResultMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1794,7 +1794,7 @@ public class RoomMessageHandler : IDisposable
     /// @see com.sulake.habbo.room.RoomMessageHandler::onGuideSessionStarted
     private void OnGuideSessionStarted(IMessageEvent e)
     {
-        var parser = e.parser as GuideSessionStartedMessageEventParser;
+        GuideSessionStartedMessageEventParser? parser = e.parser as GuideSessionStartedMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1825,7 +1825,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as BuildersClubPlacementWarningMessageEventParser;
+        BuildersClubPlacementWarningMessageEventParser? parser = e.parser as BuildersClubPlacementWarningMessageEventParser;
         if (parser == null)
         {
             return;
@@ -1842,7 +1842,7 @@ public class RoomMessageHandler : IDisposable
             return;
         }
 
-        var parser = e.parser as ObjectRemoveConfirmMessageEventParser;
+        ObjectRemoveConfirmMessageEventParser? parser = e.parser as ObjectRemoveConfirmMessageEventParser;
         if (parser == null)
         {
             return;

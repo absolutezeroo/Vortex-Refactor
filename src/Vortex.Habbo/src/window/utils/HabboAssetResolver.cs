@@ -1,5 +1,6 @@
 // @see habbo/window/utils/class_3503.as (asset resolution logic)
 
+using System;
 using System.IO;
 using System.Xml.Linq;
 
@@ -31,21 +32,49 @@ public static class HabboAssetResolver
             return cached;
         }
 
-        // Strip "_png" suffix and resolve to filesystem path
-        string fileName = assetName;
+        string fileName = ResolveImageFileName(assetName);
 
-        if (fileName.EndsWith("_png"))
-        {
-            fileName = fileName[..^4];
-        }
-
-        string resPath = $"res://assets/images/{fileName}.png";
-        string? absPath = ProjectSettings.GlobalizePath(resPath);
+        string[] candidates =
+        [
+            fileName,
+            Path.GetFileName(fileName),
+        ];
 
         Image? image = null;
 
-        if (File.Exists(absPath))
+        foreach (string candidate in candidates)
         {
+            if (string.IsNullOrWhiteSpace(candidate))
+            {
+                continue;
+            }
+
+            string resPath = candidate.StartsWith("res://", StringComparison.Ordinal)
+                ? candidate
+                : $"res://assets/images/{candidate}";
+
+            if (ResourceLoader.Exists(resPath))
+            {
+                Texture2D? texture = ResourceLoader.Load<Texture2D>(resPath);
+
+                if (texture != null)
+                {
+                    image = texture.GetImage();
+
+                    if (image != null)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            string? absPath = ProjectSettings.GlobalizePath(resPath);
+
+            if (string.IsNullOrEmpty(absPath) || !File.Exists(absPath))
+            {
+                continue;
+            }
+
             image = new Image();
             Error err = image.Load(absPath);
 
@@ -53,11 +82,39 @@ public static class HabboAssetResolver
             {
                 GD.PrintErr($"[HabboAssetResolver] Failed to load image: {absPath} (error: {err})");
                 image = null;
+                continue;
             }
+
+            break;
         }
 
         _imageCache[assetName] = image;
         return image;
+    }
+
+    private static string ResolveImageFileName(string assetName)
+    {
+        string fileName = assetName.Replace('\\', '/');
+
+        fileName = fileName.Replace("${image.library.url}", string.Empty, StringComparison.Ordinal);
+
+        if (Uri.TryCreate(fileName, UriKind.Absolute, out Uri? uri) &&
+            (string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)))
+        {
+            fileName = uri.AbsolutePath.TrimStart('/');
+        }
+
+        if (fileName.EndsWith("_png", StringComparison.Ordinal))
+        {
+            fileName = fileName[..^4] + ".png";
+        }
+        else if (!fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+        {
+            fileName += ".png";
+        }
+
+        return fileName;
     }
 
     /// <summary>

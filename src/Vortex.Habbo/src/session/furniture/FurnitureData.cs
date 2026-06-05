@@ -1,5 +1,7 @@
 // @see com.sulake.habbo.session.furniture.FurnitureData
 
+using System;
+
 namespace Vortex.Habbo.Session.Furniture;
 
 /// @see com.sulake.habbo.session.furniture.FurnitureData
@@ -43,8 +45,7 @@ public class FurnitureData : IFurnitureData
         this.canLayOn = canLayOn;
         this.excludedFromDynamic = excludedFromDynamic;
         this.furniLine = furniLine;
-        // specialtype == 2 means external image furniture in AS3
-        isExternalImageType = category == 2;
+        isExternalImageType = this.className.Contains("external_image", StringComparison.Ordinal);
     }
 
     public string type { get; }

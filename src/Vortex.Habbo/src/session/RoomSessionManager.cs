@@ -85,13 +85,13 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
             return;
         }
 
-        foreach (var session in _sessions.Values)
+        foreach (RoomSession session in _sessions.Values)
         {
             session.Dispose();
         }
 
         _sessions.Clear();
-        foreach (var handler in _handlers)
+        foreach (BaseHandler handler in _handlers)
         {
             handler.Dispose();
         }
@@ -149,7 +149,7 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
     /// @see RoomSessionManager.as::gotoRoom
     public bool GotoRoom(int roomId, string password = "", string doorbell = "")
     {
-        var session = new RoomSession
+        RoomSession session = new RoomSession
         {
             roomId = roomId,
             roomPassword = password,
@@ -162,7 +162,7 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
     /// @see RoomSessionManager.as::gotoRoomNetwork
     public bool GotoRoomNetwork(int roomId, int networkId)
     {
-        var session = new RoomSession
+        RoomSession session = new RoomSession
         {
             roomId = 1,
             roomPassword = "",
@@ -233,7 +233,7 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
     /// @see RoomSessionManager.as::startGameSession
     public void StartGameSession()
     {
-        var session = new RoomSession
+        RoomSession session = new RoomSession
         {
             roomId = 1,
             isGameSession = true,
@@ -247,7 +247,7 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
     public void DisposeGameSession()
     {
         string key = GetRoomIdentifier(1);
-        if (_sessions.TryGetValue(key, out var session) && session.isGameSession)
+        if (_sessions.TryGetValue(key, out RoomSession? session) && session.isGameSession)
         {
             DisposeSession(1, false);
         }
@@ -256,7 +256,7 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
     /// @see RoomSessionManager.as::sessionUpdate (IRoomHandlerListener)
     public void SessionUpdate(int roomId, string state)
     {
-        var session = GetSession(roomId);
+        IRoomSession? session = GetSession(roomId);
         if (session == null)
         {
             return;
@@ -277,7 +277,7 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
     public void SessionReinitialize(int oldRoomId, int newRoomId)
     {
         string oldKey = GetRoomIdentifier(oldRoomId);
-        if (!_sessions.Remove(oldKey, out var session))
+        if (!_sessions.Remove(oldKey, out RoomSession? session))
         {
             return;
         }
@@ -292,7 +292,7 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
     /// @see RoomSessionManager.as::getSession (IRoomHandlerListener + IRoomSessionManager)
     public IRoomSession? GetSession(int roomId)
     {
-        _sessions.TryGetValue(GetRoomIdentifier(roomId), out var session);
+        _sessions.TryGetValue(GetRoomIdentifier(roomId), out RoomSession? session);
         return session;
     }
 
@@ -300,7 +300,7 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
     public void DisposeSession(int roomId, bool sendDisconnect = true)
     {
         string key = GetRoomIdentifier(roomId);
-        if (!_sessions.Remove(key, out var session))
+        if (!_sessions.Remove(key, out RoomSession? session))
         {
             return;
         }
@@ -311,12 +311,15 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
 
     private void UpdateHandlers(IRoomSession session)
     {
-        foreach (var handler in _handlers)
+        foreach (BaseHandler handler in _handlers)
         {
             handler.currentRoomId = session.roomId;
         }
     }
 
     /// @see RoomSessionManager.as::getRoomIdentifier — always returns same key per source
-    private static string GetRoomIdentifier(int roomId) => "hard_coded_room_id";
+    private static string GetRoomIdentifier(int roomId)
+    {
+        return "hard_coded_room_id";
+    }
 }

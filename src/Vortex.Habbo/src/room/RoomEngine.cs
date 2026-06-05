@@ -18,6 +18,7 @@ using Vortex.Habbo.Room.Object;
 using Vortex.Habbo.Room.Object.Data;
 using Vortex.Habbo.Room.Utils;
 using Vortex.Habbo.Session;
+using Vortex.Habbo.Toolbar;
 using Vortex.Habbo.Window;
 
 using RoomObjectUpdateMessage = Vortex.Room.Messages.RoomObjectUpdateMessage;
@@ -87,11 +88,11 @@ public class RoomEngine : Component,
     // TODO: RoomAreaSelectionManager _areaSelectionManager — unported
 
     private IRoomManager? _roomManager;
-    private ISessionDataManager _sessionDataManager;
-    private IRoomSessionManager _roomSessionManager;
-    // TODO: IHabboToolbar _toolbar — unported
+    private ISessionDataManager? _sessionDataManager;
+    private IRoomSessionManager? _roomSessionManager;
+    private IHabboToolbar? _toolbar;
     // TODO: IHabboCatalog _catalog — unported
-    private IHabboWindowManager _windowManager;
+    private IHabboWindowManager? _windowManager;
 
     /// @see com.sulake.habbo.room.RoomEngine::RoomEngine
     public RoomEngine(IContext? param1 = null, uint param2 = 0, object? param3 = null)
@@ -149,10 +150,10 @@ public class RoomEngine : Component,
                     o => _roomSessionManager = o as IRoomSessionManager,
                     false
                 ),
-                // 10. IHabboToolbar (optional, toolbar click event) — TODO: wire when toolbar is ported
-                // new ComponentDependency(
-                //     new IID.IIDHabboToolbar(), ...
-                // ),
+                // 10. IHabboToolbar (optional)
+                new ComponentDependency(
+                    new IID.IIDHabboToolbar(), o => _toolbar = o as IHabboToolbar, false
+                ),
                 // 11. IHabboCatalog (optional) — TODO: wire when catalog is ported
                 // new ComponentDependency(
                 //     new IID.IIDHabboCatalog(), o => _catalog = o as IHabboCatalog, false
@@ -369,7 +370,7 @@ public class RoomEngine : Component,
 
         _roomDraggingAlwaysCenters = GetBoolean("room.dragging.always_center");
 
-        // TODO: _roomContentLoader.SessionDataManager = _sessionDataManager;
+        _roomContentLoader.SessionDataManager = _sessionDataManager;
 
         // The current furni-data adaptation can complete synchronously during Initialize().
         events.AddEventListener(RoomContentLoader.CONTENT_LOADER_READY, OnContentLoaderReady);
@@ -471,6 +472,12 @@ public class RoomEngine : Component,
             data.Dispose();
         }
 
+        if (_roomInstanceData == null || _roomInstanceData.Count == 0)
+        {
+            _activeRoomId = 0;
+            _toolbar?.SetToolbarState(HabboToolbarEnum.TOOLBAR_STATE_HOTEL_VIEW);
+        }
+
         events.DispatchEvent(new RoomEngineEvent(RoomEngineEvent.ROOM_DISPOSED, roomId));
     }
 
@@ -483,12 +490,16 @@ public class RoomEngine : Component,
         }
 
         _activeRoomId = roomId;
+        _toolbar?.SetToolbarState(HabboToolbarEnum.TOOLBAR_STATE_ROOM_VIEW);
     }
 
     /// @see com.sulake.habbo.room.RoomEngine::setOwnUserId
     public void SetOwnUserId(int roomId, int userId)
     {
-        // TODO: Wire _roomSessionManager.GetSession(roomId).OwnUserRoomId = userId when session manager is ported
+        if (_roomSessionManager?.GetSession(roomId) is IRoomSession roomSession)
+        {
+            roomSession.ownUserRoomId = userId;
+        }
         RoomCamera? camera = GetRoomCamera(roomId);
 
         if (camera != null)

@@ -1,5 +1,6 @@
 // @see com.sulake.habbo.session.SessionDataManager
 
+using System;
 using System.Linq;
 
 using Godot;
@@ -8,8 +9,12 @@ using Vortex.Core.Communication.Messages;
 using Vortex.Core.Runtime;
 using Vortex.Core.Runtime.Events;
 using Vortex.Habbo.Communication;
+using Vortex.Habbo.Communication.Messages.Incoming.Availability;
 using Vortex.Habbo.Communication.Messages.Incoming.Handshake;
+using Vortex.Habbo.Communication.Messages.Incoming.Preferences;
 using Vortex.Habbo.Communication.Messages.Incoming.Room.Engine;
+using Vortex.Habbo.Communication.Messages.Incoming.Users;
+using Vortex.Habbo.Configuration;
 using Vortex.Habbo.Session.Events;
 using Vortex.Habbo.Session.Furniture;
 using Vortex.Habbo.Session.Product;
@@ -47,11 +52,16 @@ public class SessionDataManager : Component, ISessionDataManager
 
     // --- Club / security ---
     private int _clubLevel;
+    private int _currentSecurityLevel;
     private int _topSecurityLevel;
+
+    // --- Noobness ---
+    private int _noobnessLevel = -1;
 
     // --- Injected managers (via ComponentDependency) ---
     private object? _communicationObj;
     private object? _windowManagerObj;
+    private IHabboConfigurationManager? _configurationManager;
     private object? _localizationObj;
     private object? _roomSessionManagerObj;
 
@@ -66,33 +76,36 @@ public class SessionDataManager : Component, ISessionDataManager
     // --- Data stores ---
     private readonly Dictionary<int, IFurnitureData> _floorItems = new();
     private readonly Dictionary<int, IFurnitureData> _wallItems = new();
-    private readonly Dictionary<string, List<int>> _classNameMap = new();
+    private readonly Dictionary<string, List<int>> _floorItemClassNames = new();
+    private readonly Dictionary<string, List<int>> _wallItemClassNames = new();
     private readonly Dictionary<string, IProductData> _products = new();
 
     // --- Furni data listeners ---
     private readonly List<IFurniDataListener> _furniDataListeners = new();
     private bool _furniDataReady;
+    private bool _furniDataListenersNotified;
+    private bool _configurationComplete;
+    private string? _newFurniDataHash;
     private readonly List<IProductDataListener> _productDataListeners = new();
     private bool _productDataReady;
 
     // --- Wired message events (for removal on dispose) ---
     private IMessageEvent? _userObjectEvent;
     private IMessageEvent? _userChangeEvent;
+    private IMessageEvent? _userRightsEvent;
+    private IMessageEvent? _figureUpdateEvent;
+    private IMessageEvent? _noobnessLevelEvent;
+    private IMessageEvent? _accountSafetyLockEvent;
+    private IMessageEvent? _emailStatusEvent;
+    private IMessageEvent? _accountPreferencesEvent;
+    private IMessageEvent? _availabilityStatusEvent;
 
     // TODO(communication): Wire once ported:
-    // private IMessageEvent? _userRightsEvent;           // sets clubLevel, topSecurityLevel
-    // private IMessageEvent? _figureUpdateEvent;          // updates avatar figure
-    // private IMessageEvent? _noobnessLevelEvent;         // sets isNoob flags
-    // private IMessageEvent? _changeUserNameResultEvent;  // username change result
-    // private IMessageEvent? _accountSafetyLockEvent;     // sets _isAccountSafetyLocked
-    // private IMessageEvent? _emailStatusEvent;           // sets _isEmailVerified
+    // private IMessageEvent? _changeUserNameResultEvent;  // username change result  (class_341, ID 3732)
     // private IMessageEvent? _catalogPublishedEvent;      // catalog availability
-    // private IMessageEvent? _accountPreferencesEvent;    // uiFlags, camera follow, toolbar state
-    // private IMessageEvent? _userNameChangedEvent;       // propagates UserNameUpdateEvent
-    // private IMessageEvent? _inClientLinkEvent;          // in-client link navigation
-    // private IMessageEvent? _petRespectFailedEvent;      // increments _petRespectLeft
-    // private IMessageEvent? _mysteryBoxKeysEvent;        // sets _mysteryBoxColor/_mysteryKeyColor
-    // private IMessageEvent? _availabilityStatusEvent;    // sets _systemOpen/_systemShutDown
+    // private IMessageEvent? _inClientLinkEvent;          // in-client link navigation (class_949)
+    // private IMessageEvent? _petRespectFailedEvent;      // increments _petRespectLeft (class_298, ID 3002)
+    // private IMessageEvent? _mysteryBoxKeysEvent;        // sets _mysteryBoxColor/_mysteryKeyColor (class_621)
 
     /// @see SessionDataManager.as::SessionDataManager
     public SessionDataManager(IContext param1, uint param2 = 0, object? param3 = null)
@@ -107,27 +120,20 @@ public class SessionDataManager : Component, ISessionDataManager
     protected override IList<ComponentDependency> dependencies =>
         new List<ComponentDependency>(base.dependencies)
         {
-            new(new IIDHabboCommunicationManager(), p => _communicationObj = p, true),
             new(new IIDHabboWindowManager(),        p => _windowManagerObj = p, false),
-            new(new IIDHabboLocalizationManager(),  p => _localizationObj = p, false),
+            new(new IIDHabboCommunicationManager(), p => _communicationObj = p, (_flags & COMPONENT_FLAG_INTERFACE) == 0),
+            new(
+                new IIDHabboConfigurationManager(),
+                p => _configurationManager = p as IHabboConfigurationManager,
+                true,
+                [new DependencyEventListener("complete", OnConfigurationComplete)]),
+            new(new IIDHabboLocalizationManager(),  p => _localizationObj = p),
             new(new IIDHabboRoomSessionManager(),   p => _roomSessionManagerObj = p, false),
         };
 
     /// @see SessionDataManager.as::initComponent
     protected override void InitComponent()
     {
-        _furniDataParser = new FurnitureDataParser(_floorItems, _wallItems, _classNameMap);
-        _furniDataParser.events.AddEventListener(FurnitureDataParser.READY, OnFurniDataReady);
-
-        _productDataParser = new ProductDataParser(_products);
-        _productDataParser.events.AddEventListener(ProductDataParser.READY, OnProductDataReady);
-
-        _badgeImageManager = new BadgeImageManager(events);
-
-        // Configure badge URLs from configuration
-        // TODO(config): Use actual ICoreConfiguration once IIDHabboConfigurationManager is injected.
-        // _badgeImageManager.Configure(GetProperty("image.library.url"), GetProperty("group.badge.url"));
-
         _groupInfoManager = new HabboGroupInfoManager(this);
         _ignoredUsersManager = new IgnoredUsersManager(this);
         _ignoredUsersManager.InitIgnoreList();
@@ -139,8 +145,25 @@ public class SessionDataManager : Component, ISessionDataManager
                 new UserObjectEvent(OnUserObject));
             _userChangeEvent = communication.AddHabboConnectionMessageEvent(
                 new UserChangeMessageEvent(OnUserChange));
+            _userRightsEvent = communication.AddHabboConnectionMessageEvent(
+                new UserRightsMessageEvent(OnUserRights));
+            _figureUpdateEvent = communication.AddHabboConnectionMessageEvent(
+                new Communication.Messages.Incoming.Avatar.FigureUpdateMessageEvent(OnFigureUpdate));
+            _noobnessLevelEvent = communication.AddHabboConnectionMessageEvent(
+                new NoobnessLevelMessageEvent(OnNoobnessLevel));
+            _accountSafetyLockEvent = communication.AddHabboConnectionMessageEvent(
+                new AccountSafetyLockMessageEvent(OnAccountSafetyLock));
+            _emailStatusEvent = communication.AddHabboConnectionMessageEvent(
+                new EmailStatusMessageEvent(OnEmailStatus));
+            _accountPreferencesEvent = communication.AddHabboConnectionMessageEvent(
+                new AccountPreferencesMessageEvent(OnAccountPreferences));
+            _availabilityStatusEvent = communication.AddHabboConnectionMessageEvent(
+                new AvailabilityStatusMessageEvent(OnAvailabilityStatus));
+        }
 
-            // TODO(communication): Register remaining events once ported (see field TODO block above).
+        if (_configurationManager?.IsInitialized() == true)
+        {
+            OnConfigurationComplete(null);
         }
     }
 
@@ -154,9 +177,15 @@ public class SessionDataManager : Component, ISessionDataManager
 
         if (communication != null)
         {
-            if (_userObjectEvent != null)  { communication.RemoveHabboConnectionMessageEvent(_userObjectEvent); _userObjectEvent = null; }
-            if (_userChangeEvent != null)  { communication.RemoveHabboConnectionMessageEvent(_userChangeEvent); _userChangeEvent = null; }
-            // TODO(communication): Remove remaining events when wired.
+            if (_userObjectEvent != null)        { communication.RemoveHabboConnectionMessageEvent(_userObjectEvent);        _userObjectEvent = null; }
+            if (_userChangeEvent != null)        { communication.RemoveHabboConnectionMessageEvent(_userChangeEvent);        _userChangeEvent = null; }
+            if (_userRightsEvent != null)        { communication.RemoveHabboConnectionMessageEvent(_userRightsEvent);        _userRightsEvent = null; }
+            if (_figureUpdateEvent != null)      { communication.RemoveHabboConnectionMessageEvent(_figureUpdateEvent);      _figureUpdateEvent = null; }
+            if (_noobnessLevelEvent != null)     { communication.RemoveHabboConnectionMessageEvent(_noobnessLevelEvent);     _noobnessLevelEvent = null; }
+            if (_accountSafetyLockEvent != null) { communication.RemoveHabboConnectionMessageEvent(_accountSafetyLockEvent); _accountSafetyLockEvent = null; }
+            if (_emailStatusEvent != null)       { communication.RemoveHabboConnectionMessageEvent(_emailStatusEvent);       _emailStatusEvent = null; }
+            if (_accountPreferencesEvent != null){ communication.RemoveHabboConnectionMessageEvent(_accountPreferencesEvent); _accountPreferencesEvent = null; }
+            if (_availabilityStatusEvent != null){ communication.RemoveHabboConnectionMessageEvent(_availabilityStatusEvent); _availabilityStatusEvent = null; }
         }
 
         _perkManager?.Dispose();
@@ -170,10 +199,105 @@ public class SessionDataManager : Component, ISessionDataManager
         _productDataListeners.Clear();
         _floorItems.Clear();
         _wallItems.Clear();
-        _classNameMap.Clear();
+        _floorItemClassNames.Clear();
+        _wallItemClassNames.Clear();
         _products.Clear();
 
         base.Dispose();
+    }
+
+    /// @see SessionDataManager.as::onConfigurationComplete
+    private void OnConfigurationComplete(object? param1)
+    {
+        _ = param1;
+
+        if (_configurationComplete)
+        {
+            return;
+        }
+
+        _configurationComplete = true;
+        _furniDataReady = false;
+        _furniDataListenersNotified = false;
+        _productDataReady = false;
+
+        _products.Clear();
+        _floorItems.Clear();
+        _wallItems.Clear();
+        _floorItemClassNames.Clear();
+        _wallItemClassNames.Clear();
+
+        InitFurnitureData();
+        InitProductData();
+        InitBadgeImageManager();
+    }
+
+    /// @see SessionDataManager.as::initBadgeImageManager
+    private void InitBadgeImageManager()
+    {
+        if (_badgeImageManager != null)
+        {
+            return;
+        }
+
+        _badgeImageManager = new BadgeImageManager(events);
+        _badgeImageManager.Configure(GetProperty("image.library.url"), GetProperty("group.badge.url"));
+    }
+
+    /// @see SessionDataManager.as::initFurnitureData
+    private void InitFurnitureData(bool errorOnFailure = true)
+    {
+        _ = errorOnFailure;
+
+        if (_furniDataParser != null)
+        {
+            _furniDataParser.events.RemoveEventListener(FurnitureDataParser.READY, OnFurniDataReady);
+            _furniDataParser.Dispose();
+            _furniDataParser = null;
+        }
+
+        _furniDataParser = new FurnitureDataParser(
+            _floorItems,
+            _wallItems,
+            _floorItemClassNames,
+            _wallItemClassNames);
+        _furniDataParser.events.AddEventListener(FurnitureDataParser.READY, OnFurniDataReady);
+
+        if (!PropertyExists("furnidata.load.url"))
+        {
+            return;
+        }
+
+        string furniDataUrl = GetProperty("furnidata.load.url");
+
+        if (_newFurniDataHash != null)
+        {
+            int separatorIndex = furniDataUrl.LastIndexOf("/", StringComparison.Ordinal);
+
+            if (separatorIndex >= 0)
+            {
+                string baseUrl = furniDataUrl[..separatorIndex];
+                furniDataUrl = baseUrl + "/" + _newFurniDataHash;
+            }
+        }
+
+        _furniDataParser.LoadData(furniDataUrl);
+    }
+
+    /// @see SessionDataManager.as::initProductData
+    private void InitProductData()
+    {
+        if (_productDataParser != null)
+        {
+            _productDataParser.events.RemoveEventListener(ProductDataParser.READY, OnProductDataReady);
+            _productDataParser.Dispose();
+            _productDataParser = null;
+        }
+
+        string productDataUrl = GetProperty("productdata.load.url");
+        _productDataParser = new ProductDataParser(_products);
+        _productDataParser.events.AddEventListener(ProductDataParser.READY, OnProductDataReady);
+        _productDataParser.LoadData(productDataUrl);
     }
 
     // --- Internal accessors for sub-managers ---
@@ -188,7 +312,7 @@ public class SessionDataManager : Component, ISessionDataManager
     public bool isAuthenticHabbo => _isAuthenticHabbo;
     public bool hasSecurity(int level)
     {
-        return _topSecurityLevel >= level;
+        return _currentSecurityLevel >= level;
     }
 
     public int topSecurityLevel => _topSecurityLevel;
@@ -196,14 +320,15 @@ public class SessionDataManager : Component, ISessionDataManager
     public int clubLevel => _clubLevel;
     public bool hasVip => _clubLevel >= 2;
     public bool hasClub => _clubLevel > 0;
-    public bool isNoob => _clubLevel == 0 && _topSecurityLevel < 2;
-    public bool isRealNoob => isNoob && _topSecurityLevel < 2;
+    public bool isNoob => _noobnessLevel != 0;
+    public bool isRealNoob => _noobnessLevel == 2;
 
     public int userId => _userId;
     public string userName => _userName;
     public string realName => _realName;
     public string figure => _figure;
     public string gender => _gender;
+    public string? newFurniDataHash { set => _newFurniDataHash = value; }
     public bool nameChangeAllowed => _nameChangeAllowed;
     public bool isAnyRoomController => _topSecurityLevel >= 2 || _isAmbassador;
     public bool isAmbassador => _isAmbassador;
@@ -213,6 +338,7 @@ public class SessionDataManager : Component, ISessionDataManager
     public string? mysteryBoxColor => _mysteryBoxColor;
     public string? mysteryKeyColor => _mysteryKeyColor;
     public string? currentTalentTrack => _currentTalentTrack;
+
     public bool perksReady => _perkManager?.isReady ?? false;
 
     public int respectLeft => _respectLeft;
@@ -352,7 +478,7 @@ public class SessionDataManager : Component, ISessionDataManager
 
     public IFurnitureData? GetFloorItemDataByName(string className, int index = 0)
     {
-        if (!_classNameMap.TryGetValue(className, out List<int>? ids))
+        if (!_floorItemClassNames.TryGetValue(className, out List<int>? ids))
         {
             return null;
         }
@@ -367,7 +493,7 @@ public class SessionDataManager : Component, ISessionDataManager
 
     public IFurnitureData? GetWallItemDataByName(string className, int index = 0)
     {
-        if (!_classNameMap.TryGetValue(className, out List<int>? ids))
+        if (!_wallItemClassNames.TryGetValue(className, out List<int>? ids))
         {
             return null;
         }
@@ -385,7 +511,6 @@ public class SessionDataManager : Component, ISessionDataManager
     {
         if (_productDataReady)
         {
-            listener?.ProductDataReceived();
             return true;
         }
 
@@ -394,29 +519,34 @@ public class SessionDataManager : Component, ISessionDataManager
             AddProductsReadyEventListener(listener);
         }
 
-        // TODO(assets): Call _productDataParser.LoadData(url) once URL is available from config.
         return false;
     }
 
     /// @see SessionDataManager.as::getFurniData
-    public void GetFurniData(IFurniDataListener listener)
+    public IFurnitureData[]? GetFurniData(IFurniDataListener listener)
     {
-        if (_furniDataReady)
+        if (_floorItems.Count == 0)
         {
-            listener.FurniDataReceived();
-            return;
+            if (!_furniDataListeners.Contains(listener))
+            {
+                _furniDataListeners.Add(listener);
+            }
+
+            return null;
         }
 
-        if (!_furniDataListeners.Contains(listener))
-        {
-            _furniDataListeners.Add(listener);
-        }
-        // TODO(assets): Call _furniDataParser.LoadData(url) once URL is available from config.
+        return _floorItems.Values.Concat(_wallItems.Values).ToArray();
     }
 
     /// @see SessionDataManager.as::addProductsReadyEventListener
     public void AddProductsReadyEventListener(IProductDataListener listener)
     {
+        if (_productDataReady)
+        {
+            listener.ProductDataReceived();
+            return;
+        }
+
         if (!_productDataListeners.Contains(listener))
         {
             _productDataListeners.Add(listener);
@@ -427,6 +557,17 @@ public class SessionDataManager : Component, ISessionDataManager
     public void RemoveFurniDataListener(IFurniDataListener listener)
     {
         _furniDataListeners.Remove(listener);
+    }
+
+    /// @see SessionDataManager.as::refreshFurniData
+    public void RefreshFurniData()
+    {
+        _floorItems.Clear();
+        _wallItems.Clear();
+        _floorItemClassNames.Clear();
+        _wallItemClassNames.Clear();
+        _furniDataReady = false;
+        InitFurnitureData(false);
     }
 
     // --- Perks ---
@@ -532,8 +673,11 @@ public class SessionDataManager : Component, ISessionDataManager
         _userName = ev.name;
         _figure = ev.figure;
         _gender = ev.sex;
-        // TODO(communication): Also read realName, respectLeft, petRespectLeft,
-        // nameChangeAllowed from UserObjectMessageEventParser once extended.
+        _realName = ev.realName;
+        _respectLeft = ev.respectLeft;
+        _petRespectLeft = ev.petRespectLeft;
+        _nameChangeAllowed = ev.nameChangeAllowed;
+        _isAccountSafetyLocked = ev.accountSafetyLocked;
     }
 
     /// @see SessionDataManager.as::onUserChange (UserChangeMessageEvent)
@@ -548,20 +692,97 @@ public class SessionDataManager : Component, ISessionDataManager
         }
     }
 
+    /// @see SessionDataManager.as::onUserRights
+    private void OnUserRights(IMessageEvent param1)
+    {
+        UserRightsMessageEvent ev = (UserRightsMessageEvent)param1;
+        _clubLevel = ev.clubLevel != 0 ? 2 : 0;
+        _currentSecurityLevel = ev.securityLevel;
+        _topSecurityLevel = Math.Max(_topSecurityLevel, ev.securityLevel);
+        _isAmbassador = ev.isAmbassador;
+    }
+
+    /// @see SessionDataManager.as::onFigureUpdate (class_199)
+    private void OnFigureUpdate(IMessageEvent param1)
+    {
+        Communication.Messages.Incoming.Avatar.FigureUpdateMessageEvent ev =
+            (Communication.Messages.Incoming.Avatar.FigureUpdateMessageEvent)param1;
+        _figure = ev.figure;
+        _gender = ev.gender;
+        events?.DispatchEvent("SDM_FIGURE_UPDATED");
+    }
+
+    /// @see SessionDataManager.as::onNoobnessLevelEvent
+    private void OnNoobnessLevel(IMessageEvent param1)
+    {
+        _noobnessLevel = ((NoobnessLevelMessageEvent)param1).noobnessLevel;
+        if (_noobnessLevel != 0)
+        {
+            _configurationManager?.SetProperty("new.identity", "1");
+        }
+    }
+
+    /// @see SessionDataManager.as::onAccountSafetyLockStatusChanged (class_217)
+    private void OnAccountSafetyLock(IMessageEvent param1)
+    {
+        AccountSafetyLockMessageEvent ev = (AccountSafetyLockMessageEvent)param1;
+        _isAccountSafetyLocked = ev.status == 0;
+    }
+
+    /// @see SessionDataManager.as::onEmailStatus (class_547)
+    private void OnEmailStatus(IMessageEvent param1)
+    {
+        EmailStatusMessageEvent ev = (EmailStatusMessageEvent)param1;
+        _isEmailVerified = ev.isVerified;
+    }
+
+    /// @see SessionDataManager.as::onAccountPreferences (class_219)
+    private void OnAccountPreferences(IMessageEvent param1)
+    {
+        AccountPreferencesMessageEvent ev = (AccountPreferencesMessageEvent)param1;
+        _isRoomCameraFollowDisabled = ev.roomCameraFollowDisabled;
+        _uiFlags = ev.uiFlags;
+    }
+
+    /// @see SessionDataManager.as::onAvailabilityStatus
+    private void OnAvailabilityStatus(IMessageEvent param1)
+    {
+        AvailabilityStatusMessageEvent ev = (AvailabilityStatusMessageEvent)param1;
+        _systemOpen = ev.isOpen;
+        _systemShutDown = ev.onShutDown;
+        _isAuthenticHabbo = ev.isAuthenticHabbo;
+
+        if (_isAuthenticHabbo && !_furniDataListenersNotified)
+        {
+            _furniDataListenersNotified = true;
+            foreach (IFurniDataListener listener in _furniDataListeners.ToList())
+            {
+                listener.FurniDataReceived();
+            }
+        }
+    }
+
     /// @see SessionDataManager.as — furni data ready callback
     private void OnFurniDataReady(object? _)
     {
+        _furniDataParser?.events.RemoveEventListener(FurnitureDataParser.READY, OnFurniDataReady);
         _furniDataReady = true;
-        foreach (IFurniDataListener listener in _furniDataListeners.ToList())
+
+        if (!_furniDataListenersNotified)
         {
-            listener.FurniDataReceived();
+            _furniDataListenersNotified = true;
+
+            foreach (IFurniDataListener listener in _furniDataListeners.ToList())
+            {
+                listener.FurniDataReceived();
+            }
         }
-        _furniDataListeners.Clear();
     }
 
     /// @see SessionDataManager.as — product data ready callback
     private void OnProductDataReady(object? _)
     {
+        _productDataParser?.events.RemoveEventListener(ProductDataParser.READY, OnProductDataReady);
         _productDataReady = true;
         foreach (IProductDataListener listener in _productDataListeners.ToList())
         {

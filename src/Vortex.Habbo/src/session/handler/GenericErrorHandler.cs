@@ -26,14 +26,14 @@ public class GenericErrorHandler : BaseHandler
     /// @see GenericErrorHandler.as::onGenericError
     private void OnGenericError(IMessageEvent ev)
     {
-        var errorEv = ev as GenericErrorEvent;
-        var parser = errorEv?.GetParser();
+        GenericErrorEvent? errorEv = ev as GenericErrorEvent;
+        GenericErrorEventParser? parser = errorEv?.GetParser();
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;

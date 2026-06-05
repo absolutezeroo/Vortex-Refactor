@@ -49,10 +49,34 @@ Use one entry per adaptation:
 - Why behavior is preserved: The view is still shown on the main client desktop; the numeric layer is mapped to the active Godot window context.
 - Risk level (Low/Medium/High): Low
 
-## [Landing View] Missing Dynamic Layout Data Fallback
-- Source reference: `WIN63-202111081545-75921380-Source-main/src/com/sulake/habbo/friendbar/landingview/layout/WidgetContainerLayout.as::getLayout`
-- Target file: `src/Vortex.Habbo/src/friendbar/landingview/WidgetContainerLayout.cs`
-- Original behavior: If `landing.view.layoutxml` is absent, the AS3 client uses `landing_view_default_dynamic_layout`.
-- Godot/C# adaptation: When no dynamic slot widget configuration is present, the port falls back to `landing_view_generic_reception` so the locally extracted Hotel View can render instead of an empty dynamic shell.
-- Why behavior is preserved: Real external configuration still takes precedence through `landing.view.layoutxml`; the fallback only covers incomplete local configuration data during the port.
+## [Launcher] Full-Rect Root Control
+- Source reference: `WIN63-202111081545-75921380-Source-main/src/com/sulake/habbo/HabboAirMain.as`
+- Target file: `scenes/Vortex.tscn`
+- Original behavior: The Flash stage owns the full client viewport and the Habbo root renders into that full stage area.
+- Godot/C# adaptation: The Godot root `Control` uses full-rect anchors and the launcher script path points to the active `HabboAir.cs` location.
+- Why behavior is preserved: The client root receives the same full viewport area; only Godot scene anchoring and script resource mapping are engine-specific.
+- Risk level (Low/Medium/High): Low
+
+## [Window Resources] HTTP Bitmap Loading
+- Source reference: `WIN63-202407091256-704579380-Source-main/core/window/graphics/renderer/ResourceManager.as::retrieveAsset`
+- Target file: `src/Vortex.Habbo/src/window/ResourceManager.cs`, `src/Vortex.Core/src/assets/loaders/BitmapFileLoader.cs`
+- Original behavior: AS3 retrieves bitmap assets from the loaded asset library by resolved asset name; if the resolved name is an HTTP(S) URL, it calls `assets.loadAssetFromFile` with that URL.
+- Godot/C# adaptation: `ResourceManager` keeps the same library-first and HTTP(S)-URL loading flow, while `BitmapFileLoader` maps Flash `Loader.load(URLRequest)` to .NET HTTP download plus Godot image decoding.
+- Why behavior is preserved: `${image.library.url}` resources remain configuration-interpolated URLs loaded through the asset library; only Flash's bitmap decoder and event transport are replaced by Godot/.NET equivalents.
+- Risk level (Low/Medium/High): Low
+
+## [Launcher] Deferred RemoveChild on TreeExited
+- Source reference: `WIN63-202111081545-75921380-Source-main/src/HabboAir.as::dispose`
+- Target file: `src/Vortex.Launcher/src/HabboAir.cs`
+- Original behavior: AS3 `dispose()` calls `parent.removeChild(this)` synchronously when `HabboAirMain` is removed.
+- Godot/C# adaptation: `Dispose()` uses `CallDeferred(Node.MethodName.RemoveChild, this)` instead of a direct `RemoveChild`. The `TreeExited` signal fires while the scene tree is mid-operation; a direct `RemoveChild` call at that point triggers Godot's "parent node is busy" error.
+- Why behavior is preserved: The node is still removed from its parent; only the timing shifts to the next idle frame, which is equivalent to Flash's deferred display list removal.
+- Risk level: Low
+
+## [Session Data] HTTP Text Loading
+- Source reference: `WIN63-202407091256-704579380-Source-main/habbo/session/SessionDataManager.as::initFurnitureData`, `FurnitureDataParser.as::loadData`, `ProductDataParser.as::ProductDataParser`
+- Target file: `src/Vortex.Habbo/src/session/SessionDataManager.cs`, `src/Vortex.Habbo/src/session/furniture/FurnitureDataParser.cs`, `src/Vortex.Habbo/src/session/product/ProductDataParser.cs`
+- Original behavior: AS3 waits for configuration completion, reads `furnidata.load.url` and `productdata.load.url`, then loads those text assets through `AssetLibrary.loadAssetFromFile`.
+- Godot/C# adaptation: The parsers use `TextFileLoader` to fetch the configured URL synchronously and dispatch the same ready events after parsing.
+- Why behavior is preserved: Data source, parse format selection, ready events, and listener flow remain AS3-equivalent; only Flash's async asset transport is mapped to the existing C# loader.
 - Risk level (Low/Medium/High): Medium

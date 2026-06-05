@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Godot;
 
 using Vortex.Core.Runtime;
+using Vortex.Core.Utils;
 using Vortex.Habbo.Utils;
 using Vortex.Login;
 
@@ -155,6 +156,7 @@ public partial class HabboAir : Control
     {
         _startTime = (long)Time.GetTicksMsec();
         safeStr_245 = new Dictionary<string, object?>(StringComparer.Ordinal);
+        PacketLogger.Enabled = OS.IsDebugBuild();
 
         OnAddedToStage();
         ParseArguments([]);
@@ -533,7 +535,7 @@ public partial class HabboAir : Control
         _disposed = true;
         _loadingScreen = null;
 
-        GetParent()?.RemoveChild(this);
+        GetParent()?.CallDeferred(Node.MethodName.RemoveChild, this);
     }
 
     /// @see WIN63-202111081545-75921380-Source-main/src/HabboAir.as::getPropertyValue

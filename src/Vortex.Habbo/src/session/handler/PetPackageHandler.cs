@@ -27,13 +27,13 @@ public class PetPackageHandler : BaseHandler
     /// @see PetPackageHandler.as::onOpenPetPackageRequested
     private void OnOpenPetPackageRequested(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as OpenPetPackageRequestedMessageEventParser;
+        OpenPetPackageRequestedMessageEventParser? parser = (ev as MessageEvent)?.parser as OpenPetPackageRequestedMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -47,13 +47,13 @@ public class PetPackageHandler : BaseHandler
     /// @see PetPackageHandler.as::onOpenPetPackageResult
     private void OnOpenPetPackageResult(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as OpenPetPackageResultMessageEventParser;
+        OpenPetPackageResultMessageEventParser? parser = (ev as MessageEvent)?.parser as OpenPetPackageResultMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;

@@ -30,7 +30,7 @@ public interface IGraphicContext : IDisposable
 
     Rect2 GetDrawRegion();
 
-    Image? SetDrawRegion(Rect2 region, bool reallocate, Rect2? clipRegion);
+    Image? SetDrawRegion(Rect2 region, bool reallocate, Rect2? clipRegion, Vector2? localPosition = null);
 
     Image? FetchDrawBuffer();
 

@@ -2,9 +2,12 @@
 
 using System;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
+using Vortex.Core.Assets.Loaders;
+using Vortex.Core.Logging;
 using Vortex.Core.Runtime.Events;
 
 namespace Vortex.Habbo.Session.Furniture;
@@ -16,16 +19,19 @@ public class FurnitureDataParser
 
     private readonly Dictionary<int, IFurnitureData> _floorItems;
     private readonly Dictionary<int, IFurnitureData> _wallItems;
-    private readonly Dictionary<string, List<int>> _classNameMap;
+    private readonly Dictionary<string, List<int>> _floorItemClassNames;
+    private readonly Dictionary<string, List<int>> _wallItemClassNames;
 
     public FurnitureDataParser(
         Dictionary<int, IFurnitureData> floorItems,
         Dictionary<int, IFurnitureData> wallItems,
-        Dictionary<string, List<int>> classNameMap)
+        Dictionary<string, List<int>> floorItemClassNames,
+        Dictionary<string, List<int>> wallItemClassNames)
     {
         _floorItems = floorItems;
         _wallItems = wallItems;
-        _classNameMap = classNameMap;
+        _floorItemClassNames = floorItemClassNames;
+        _wallItemClassNames = wallItemClassNames;
         events = new EventDispatcherWrapper();
     }
 
@@ -37,14 +43,34 @@ public class FurnitureDataParser
     }
 
     /// @see FurnitureDataParser.as::loadData
-    /// TODO(assets): Replace with Godot HttpRequest loading when networking is wired.
-    /// Call ParseData(text) once the HTTP response arrives.
     public void LoadData(string url, string? checksum = null, string? language = null)
     {
-        // TODO(assets): Initiate Godot HttpRequest to url, then call ParseData on response body.
-        _ = url;
         _ = checksum;
         _ = language;
+
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return;
+        }
+
+        TextFileLoader loader = new("text/plain", url);
+
+        try
+        {
+            string? data = GetTextContent(loader.Content);
+
+            if (string.IsNullOrEmpty(data))
+            {
+                Logger.Warn("Could not download furnidata definition");
+                return;
+            }
+
+            ParseData(data);
+        }
+        finally
+        {
+            loader.Dispose();
+        }
     }
 
     /// Entry point for data already fetched as a string (XML or Lingo format).
@@ -315,10 +341,12 @@ public class FurnitureDataParser
             _wallItems[item.id] = item;
         }
 
-        if (!_classNameMap.TryGetValue(item.className, out List<int>? ids))
+        Dictionary<string, List<int>> classNameMap = item.type == "s" ? _floorItemClassNames : _wallItemClassNames;
+
+        if (!classNameMap.TryGetValue(item.className, out List<int>? ids))
         {
             ids = new List<int>();
-            _classNameMap[item.className] = ids;
+            classNameMap[item.className] = ids;
         }
 
         while (ids.Count <= item.colourIndex)
@@ -327,6 +355,16 @@ public class FurnitureDataParser
         }
 
         ids[item.colourIndex] = item.id;
+    }
+
+    private static string? GetTextContent(object? content)
+    {
+        return content switch
+        {
+            string text => text,
+            byte[] bytes => Encoding.UTF8.GetString(bytes),
+            _ => null,
+        };
     }
 
     /// @see FurnitureDataParser.as::removePatternFrom

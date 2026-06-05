@@ -39,19 +39,19 @@ public class RoomChatHandler : BaseHandler
             return;
         }
 
-        var chatEv = ev as ChatMessageEvent;
+        ChatMessageEvent? chatEv = ev as ChatMessageEvent;
         if (chatEv == null)
         {
             return;
         }
 
-        var parser = chatEv.parser as ChatMessageEventParser;
+        ChatMessageEventParser? parser = chatEv.parser as ChatMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener.GetSession(currentRoomId);
+        IRoomSession? session = listener.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -75,19 +75,19 @@ public class RoomChatHandler : BaseHandler
             return;
         }
 
-        var whisperEv = ev as WhisperMessageEvent;
+        WhisperMessageEvent? whisperEv = ev as WhisperMessageEvent;
         if (whisperEv == null)
         {
             return;
         }
 
-        var parser = whisperEv.parser as ChatMessageEventParser;
+        ChatMessageEventParser? parser = whisperEv.parser as ChatMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener.GetSession(currentRoomId);
+        IRoomSession? session = listener.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -106,19 +106,19 @@ public class RoomChatHandler : BaseHandler
             return;
         }
 
-        var shoutEv = ev as ShoutMessageEvent;
+        ShoutMessageEvent? shoutEv = ev as ShoutMessageEvent;
         if (shoutEv == null)
         {
             return;
         }
 
-        var parser = shoutEv.parser as ChatMessageEventParser;
+        ChatMessageEventParser? parser = shoutEv.parser as ChatMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener.GetSession(currentRoomId);
+        IRoomSession? session = listener.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -158,8 +158,8 @@ public class RoomChatHandler : BaseHandler
             return;
         }
 
-        var parser = (ev as MessageEvent)?.parser as FloodControlMessageEventParser;
-        var session = listener.GetSession(currentRoomId);
+        FloodControlMessageEventParser? parser = (ev as MessageEvent)?.parser as FloodControlMessageEventParser;
+        IRoomSession? session = listener.GetSession(currentRoomId);
         if (session == null)
         {
             return;
@@ -185,13 +185,13 @@ public class RoomChatHandler : BaseHandler
             return;
         }
 
-        var parser = (ev as MessageEvent)?.parser as RemainingMutePeriodEventParser;
+        RemainingMutePeriodEventParser? parser = (ev as MessageEvent)?.parser as RemainingMutePeriodEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener.GetSession(currentRoomId);
+        IRoomSession? session = listener.GetSession(currentRoomId);
         if (session == null)
         {
             return;

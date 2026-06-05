@@ -5,7 +5,7 @@ using System;
 using Godot;
 
 using Vortex.Core.Assets;
-using Vortex.Habbo.Window.Utils;
+using Vortex.Core.Assets.Loaders;
 
 namespace Vortex.Habbo.Window;
 
@@ -14,9 +14,8 @@ public class ResourceManager : IResourceManager
 {
     private HabboWindowManagerComponent? _windowManager;
 
-    /// Asset cache: resolved name → loaded asset.
-    /// @see ResourceManager.as — AS3 uses _windowManager.assets (IAssetLibrary).
-    private readonly Dictionary<string, IAsset?> _assetCache = new(StringComparer.Ordinal);
+    /// @see ResourceManager.as::_assetReceivers
+    private readonly Dictionary<string, List<IAssetReceiver>> _assetReceivers = new(StringComparer.Ordinal);
 
     /// @see ResourceManager.as::ResourceManager
     public ResourceManager() { }
@@ -39,32 +38,34 @@ public class ResourceManager : IResourceManager
         }
 
         _windowManager = null;
-        _assetCache.Clear();
+        _assetReceivers.Clear();
         disposed = true;
     }
 
-    /// @see IResourceManager.as::createAsset
+    /// @see ResourceManager.as::createAsset
     public IAsset? CreateAsset(string param1, Type param2, object? param3)
     {
-        // @see ResourceManager.as — delegates to _windowManager.assets as IAssetLibrary
-        if (_windowManager?.assets is not IAssetLibrary assetLibrary)
+        if (_windowManager?.assets is not IAssetLibrary library)
         {
             return null;
         }
 
-        AssetTypeDeclaration? declaration = assetLibrary.GetAssetTypeDeclarationByClass(param2);
+        AssetTypeDeclaration? declaration = library.GetAssetTypeDeclarationByClass(param2);
 
         if (declaration == null)
         {
             return null;
         }
 
-        IAsset? asset = assetLibrary.CreateAsset(param1, declaration);
+        IAsset? asset = Activator.CreateInstance(param2, declaration, null) as IAsset;
 
-        if (asset != null && param3 != null)
+        if (asset == null)
         {
-            asset.SetUnknownContent(param3);
+            return null;
         }
+
+        library.SetAsset(param1, asset);
+        asset.SetUnknownContent(param3);
 
         return asset;
     }
@@ -84,49 +85,85 @@ public class ResourceManager : IResourceManager
             return;
         }
 
-        // @see ResourceManager.as — check asset cache first
-        if (_assetCache.TryGetValue(resolvedName, out IAsset? cachedAsset))
+        if (_windowManager?.assets is not IAssetLibrary library)
         {
-            if (cachedAsset != null)
+            return;
+        }
+
+        IAsset? asset = library.GetAssetByName(resolvedName);
+
+        if (asset == null)
+        {
+            if (IsHttpUrl(resolvedName))
             {
-                receiver.ReceiveAsset(cachedAsset, resolvedName);
+                try
+                {
+                    AssetLoaderStruct? loader = library.LoadAssetFromFile(resolvedName, resolvedName);
+
+                    if (loader != null && !loader.disposed)
+                    {
+                        if (!_assetReceivers.TryGetValue(resolvedName, out List<IAssetReceiver>? receivers))
+                        {
+                            receivers = [];
+                            _assetReceivers[resolvedName] = receivers;
+                        }
+
+                        receivers.Add(receiver);
+                        loader.LoaderEvent += evt =>
+                        {
+                            if (evt.Type == AssetLoaderEvent.ASSET_LOADER_EVENT_COMPLETE)
+                            {
+                                PassAssetToCallback(loader);
+                            }
+                        };
+
+                        if (library.GetAssetByName(resolvedName) != null)
+                        {
+                            PassAssetToCallback(loader);
+                        }
+                    }
+                }
+                catch
+                {
+                    PassMissingImageToCallback(library, receiver, resolvedName);
+                }
             }
 
             return;
         }
 
-        // @see ResourceManager.as — AS3 checks _windowManager.assets.getAssetByName()
-        if (_windowManager?.assets is IAssetLibrary library)
+        receiver.ReceiveAsset(asset, resolvedName);
+    }
+
+    /// @see ResourceManager.as::passAssetToCallback
+    private void PassAssetToCallback(AssetLoaderStruct loader)
+    {
+        if (disposed || loader.AssetName == null || _windowManager?.assets is not IAssetLibrary library)
         {
-            IAsset? libraryAsset = library.GetAssetByName(resolvedName);
+            return;
+        }
 
-            if (libraryAsset != null)
+        if (!_assetReceivers.TryGetValue(loader.AssetName, out List<IAssetReceiver>? receivers))
+        {
+            return;
+        }
+
+        IAsset? asset = library.GetAssetByName(loader.AssetName);
+
+        if (asset == null)
+        {
+            return;
+        }
+
+        foreach (IAssetReceiver receiver in receivers)
+        {
+            if (!receiver.disposed)
             {
-                _assetCache[resolvedName] = libraryAsset;
-
-                receiver.ReceiveAsset(libraryAsset, resolvedName);
-
-                return;
+                receiver.ReceiveAsset(asset, asset.Url ?? loader.AssetName);
             }
         }
 
-        // Godot adaptation: fall back to filesystem via HabboAssetResolver.
-        Image? image = HabboAssetResolver.LoadImageAsset(resolvedName);
-
-        if (image != null)
-        {
-            BitmapDataAsset asset = new(image)
-            {
-                Url = resolvedName,
-            };
-            _assetCache[resolvedName] = asset;
-            receiver.ReceiveAsset(asset, resolvedName);
-        }
-        else
-        {
-            // @see ResourceManager.as — AS3 uses "missing_image_icon" as fallback
-            _assetCache[resolvedName] = null;
-        }
+        _assetReceivers.Remove(loader.AssetName);
     }
 
     /// @see ResourceManager.as::isSameAsset
@@ -138,7 +175,7 @@ public class ResourceManager : IResourceManager
     /// @see ResourceManager.as::resolveAssetName
     private string? ResolveAssetName(string param1)
     {
-        return _windowManager?.context.configuration?.Interpolate(param1) ?? param1;
+        return _windowManager?.Interpolate(param1);
     }
 
     /// @see ResourceManager.as::removeAsset
@@ -146,9 +183,43 @@ public class ResourceManager : IResourceManager
     {
         string? resolved = ResolveAssetName(param1);
 
-        if (resolved != null)
+        if (resolved == null || _windowManager?.assets is not IAssetLibrary library)
         {
-            _assetCache.Remove(resolved);
+            return;
         }
+
+        IAsset? asset = library.GetAssetByName(resolved);
+
+        if (asset != null)
+        {
+            library.RemoveAsset(asset);
+        }
+    }
+
+    private static bool IsHttpUrl(string value)
+    {
+        return value.StartsWith("http://", StringComparison.Ordinal) ||
+               value.StartsWith("https://", StringComparison.Ordinal);
+    }
+
+    private static void PassMissingImageToCallback(IAssetLibrary library, IAssetReceiver receiver, string resolvedName)
+    {
+        if (library.GetAssetByName("missing_image_icon") is not BitmapDataAsset missingAsset ||
+            missingAsset.Content is not Image missingImage)
+        {
+            return;
+        }
+
+        Image image = Image.CreateFromData(
+            missingImage.GetWidth(),
+            missingImage.GetHeight(),
+            missingImage.HasMipmaps(),
+            missingImage.GetFormat(),
+            missingImage.GetData()
+        );
+
+        BitmapDataAsset asset = new(null);
+        asset.SetUnknownContent(image);
+        receiver.ReceiveAsset(asset, resolvedName);
     }
 }

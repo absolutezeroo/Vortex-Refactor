@@ -35,6 +35,7 @@ public interface ISessionDataManager : IUnknown
     string realName { get; }
     string figure { get; }
     string gender { get; }
+    string? newFurniDataHash { set; }
     bool nameChangeAllowed { get; }
     bool isAnyRoomController { get; }
     bool isAmbassador { get; }
@@ -80,9 +81,10 @@ public interface ISessionDataManager : IUnknown
     IFurnitureData? GetFloorItemDataByName(string className, int index = 0);
     IFurnitureData? GetWallItemDataByName(string className, int index = 0);
     bool LoadProductData(IProductDataListener? listener = null);
-    void GetFurniData(IFurniDataListener listener);
+    IFurnitureData[]? GetFurniData(IFurniDataListener listener);
     void AddProductsReadyEventListener(IProductDataListener listener);
     void RemoveFurniDataListener(IFurniDataListener listener);
+    void RefreshFurniData();
 
     // --- Perks ---
     bool perksReady { get; }

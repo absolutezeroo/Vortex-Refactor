@@ -28,19 +28,19 @@ public class WordQuizHandler : BaseHandler
     /// @see WordQuizHandler.as::onQuestionStatus
     private void OnQuestionStatus(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as QuestionMessageEventParser;
+        QuestionMessageEventParser? parser = (ev as MessageEvent)?.parser as QuestionMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
         }
 
-        var quizEvent = new RoomSessionWordQuizEvent(RoomSessionWordQuizEvent.NEW_QUESTION, session, parser.PollId)
+        RoomSessionWordQuizEvent quizEvent = new RoomSessionWordQuizEvent(RoomSessionWordQuizEvent.NEW_QUESTION, session, parser.PollId)
         {
             pollId     = parser.PollId,
             pollType   = parser.PollType,
@@ -54,19 +54,19 @@ public class WordQuizHandler : BaseHandler
     /// @see WordQuizHandler.as::onQuestionAnsweredEvent
     private void OnQuestionAnswered(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as QuestionAnsweredMessageEventParser;
+        QuestionAnsweredMessageEventParser? parser = (ev as MessageEvent)?.parser as QuestionAnsweredMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
         }
 
-        var quizEvent = new RoomSessionWordQuizEvent(RoomSessionWordQuizEvent.QUESTION_ANSWERED, session, parser.UserId)
+        RoomSessionWordQuizEvent quizEvent = new RoomSessionWordQuizEvent(RoomSessionWordQuizEvent.QUESTION_ANSWERED, session, parser.UserId)
         {
             userId       = parser.UserId,
             value        = parser.Value,
@@ -78,19 +78,19 @@ public class WordQuizHandler : BaseHandler
     /// @see WordQuizHandler.as::onQuestionFinishedEvent
     private void OnQuestionFinished(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as QuestionFinishedMessageEventParser;
+        QuestionFinishedMessageEventParser? parser = (ev as MessageEvent)?.parser as QuestionFinishedMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;
         }
 
-        var quizEvent = new RoomSessionWordQuizEvent(RoomSessionWordQuizEvent.FINISHED, session)
+        RoomSessionWordQuizEvent quizEvent = new RoomSessionWordQuizEvent(RoomSessionWordQuizEvent.FINISHED, session)
         {
             questionId   = parser.QuestionId,
             answerCounts = parser.AnswerCounts,

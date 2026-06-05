@@ -9,7 +9,7 @@ public class PollAnswerComposer(int pollId, int questionId, IReadOnlyList<string
     public List<object> GetMessageArray()
     {
         // TODO(as3-port): verify payload order from AS3 source
-        var result = new List<object> { pollId, questionId, answers.Count };
+        List<object> result = new List<object> { pollId, questionId, answers.Count };
         foreach (string answer in answers)
         {
             result.Add(answer);

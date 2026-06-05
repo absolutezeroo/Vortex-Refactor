@@ -27,13 +27,13 @@ public class RoomPermissionsHandler : BaseHandler
     /// @see RoomPermissionsHandler.as::onYouAreController
     private void OnYouAreController(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as YouAreControllerMessageEventParser;
+        YouAreControllerMessageEventParser? parser = (ev as MessageEvent)?.parser as YouAreControllerMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(parser.FlatId);
+        IRoomSession? session = listener?.GetSession(parser.FlatId);
         if (session == null)
         {
             return;
@@ -45,13 +45,13 @@ public class RoomPermissionsHandler : BaseHandler
     /// @see RoomPermissionsHandler.as::onYouAreNotController
     private void OnYouAreNotController(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as YouAreNotControllerMessageEventParser;
+        YouAreNotControllerMessageEventParser? parser = (ev as MessageEvent)?.parser as YouAreNotControllerMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(parser.FlatId);
+        IRoomSession? session = listener?.GetSession(parser.FlatId);
         if (session == null)
         {
             return;
@@ -63,7 +63,7 @@ public class RoomPermissionsHandler : BaseHandler
     /// @see RoomPermissionsHandler.as::onYouAreOwner
     private void OnYouAreOwner(IMessageEvent ev)
     {
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;

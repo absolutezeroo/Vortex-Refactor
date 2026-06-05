@@ -8,8 +8,18 @@ namespace Vortex.Habbo.Communication.Messages.Incoming.Handshake;
 /// @see com.sulake.habbo.communication.messages.incoming.handshake.UserObjectEvent
 public class UserObjectEvent(Action<IMessageEvent> param1) : MessageEvent(param1, typeof(UserObjectMessageEventParser))
 {
-    public int id => ((UserObjectMessageEventParser)parser!).id;
-    public string name => ((UserObjectMessageEventParser)parser!).name;
-    public string figure => ((UserObjectMessageEventParser)parser!).figure;
-    public string sex => ((UserObjectMessageEventParser)parser!).sex;
+    private UserObjectMessageEventParser GetParser()
+    {
+        return (UserObjectMessageEventParser)parser!;
+    }
+
+    public int id => GetParser().id;
+    public string name => GetParser().name;
+    public string figure => GetParser().figure;
+    public string sex => GetParser().sex;
+    public string realName => GetParser().realName;
+    public int respectLeft => GetParser().respectLeft;
+    public int petRespectLeft => GetParser().petRespectLeft;
+    public bool nameChangeAllowed => GetParser().nameChangeAllowed;
+    public bool accountSafetyLocked => GetParser().accountSafetyLocked;
 }

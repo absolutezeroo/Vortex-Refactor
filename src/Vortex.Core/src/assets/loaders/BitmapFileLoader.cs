@@ -5,6 +5,8 @@ using System.IO;
 
 using Godot;
 
+using NetHttpClient = System.Net.Http.HttpClient;
+
 namespace Vortex.Core.Assets.Loaders;
 
 /// @see core/assets/loaders/BitmapFileLoader.as
@@ -12,6 +14,11 @@ namespace Vortex.Core.Assets.Loaders;
 /// Content returns Godot Image instead of Flash Bitmap.
 public class BitmapFileLoader : AssetLoaderBase, IAssetLoader
 {
+    private static readonly NetHttpClient SharedHttpClient = new()
+    {
+        Timeout = TimeSpan.FromSeconds(30),
+    };
+
     protected string? _url;
     protected string? _mimeType;
     protected Image? _image;
@@ -64,11 +71,16 @@ public class BitmapFileLoader : AssetLoaderBase, IAssetLoader
     public int Id { get; }
 
     /// @see BitmapFileLoader.as::load
-    /// Godot adaptation: loads image from Godot resource path or filesystem.
+    /// Godot adaptation: loads image from Godot resource path, filesystem, or HTTP URL.
     public void Load(string url)
     {
         _url = url;
         _retryCount = 0;
+        LoadUrl(url);
+    }
+
+    private void LoadUrl(string url)
+    {
         _image = null;
         _rawBytes = null;
 
@@ -80,6 +92,11 @@ public class BitmapFileLoader : AssetLoaderBase, IAssetLoader
             if (url.StartsWith("res://", StringComparison.Ordinal) || url.StartsWith("user://", StringComparison.Ordinal))
             {
                 error = image.Load(url);
+            }
+            else if (IsHttpUrl(url))
+            {
+                _rawBytes = SharedHttpClient.GetByteArrayAsync(url).GetAwaiter().GetResult();
+                error = TryLoadFromBytes(image, _rawBytes, url);
             }
             else if (File.Exists(url))
             {
@@ -123,7 +140,8 @@ public class BitmapFileLoader : AssetLoaderBase, IAssetLoader
 
         try
         {
-            Load(_url);
+            string retryUrl = _url + (_url.Contains("?", StringComparison.Ordinal) ? "&" : "?") + "retry=" + _retryCount;
+            LoadUrl(retryUrl);
         }
         catch
         {
@@ -163,5 +181,11 @@ public class BitmapFileLoader : AssetLoaderBase, IAssetLoader
                 ? Error.Ok
                 : image.LoadJpgFromBuffer(bytes),
         };
+    }
+
+    private static bool IsHttpUrl(string url)
+    {
+        return url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+               url.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
     }
 }

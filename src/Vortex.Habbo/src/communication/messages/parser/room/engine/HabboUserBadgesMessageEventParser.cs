@@ -22,7 +22,7 @@ public class HabboUserBadgesMessageEventParser : IMessageParser
         // TODO(as3-port): verify wire format order from AS3 source
         UserId = param1.ReadInteger();
         int count = param1.ReadInteger();
-        var badges = new List<string>(count);
+        List<string> badges = new List<string>(count);
         for (int i = 0; i < count; i++)
         {
             param1.ReadInteger(); // slot index

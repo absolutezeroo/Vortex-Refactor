@@ -2,10 +2,12 @@ using System;
 
 using Vortex.Core.Communication.Messages;
 using Vortex.Habbo.Communication.Messages.Incoming.Availability;
+using Vortex.Habbo.Communication.Messages.Incoming.Avatar;
 using Vortex.Habbo.Communication.Messages.Incoming.Error;
 using Vortex.Habbo.Communication.Messages.Incoming.Handshake;
 using Vortex.Habbo.Communication.Messages.Incoming.Help;
 using Vortex.Habbo.Communication.Messages.Incoming.Navigator;
+using Vortex.Habbo.Communication.Messages.Incoming.Preferences;
 using Vortex.Habbo.Communication.Messages.Incoming.Room.Action;
 using Vortex.Habbo.Communication.Messages.Incoming.Room.Chat;
 using Vortex.Habbo.Communication.Messages.Incoming.Room.Data;
@@ -47,7 +49,8 @@ public class HabboMessages : IMessageConfiguration
         events[184]  = typeof(MaintenanceStatusMessageEvent);
         events[2761] = typeof(LoginFailedHotelClosedMessageEvent);
         events[3034] = typeof(CompleteDiffieHandshakeEvent);
-        events[836]  = typeof(UniqueMachineIdEvent);
+        events[744]  = typeof(FigureUpdateMessageEvent); // FigureUpdateComposer = 744
+        events[836]  = typeof(UniqueMachineIdEvent);    // UniqueMachineIDComposer = 836
         events[4000] = typeof(DisconnectReasonEvent);
         events[195]  = typeof(GenericErrorEvent);
         events[1790] = typeof(ErrorReportEvent);
@@ -168,6 +171,14 @@ public class HabboMessages : IMessageConfiguration
 
         // --- Room Data ---
         events[2582] = typeof(GetGuestRoomResultEvent);
+
+        // --- Session Data ---
+        events[3337] = typeof(UserRightsMessageEvent);           // @see HabboMessages.as: _events[1416] = class_143
+        events[782] = typeof(NoobnessLevelMessageEvent);        // @see HabboMessages.as: _events[1916] = NoobnessLevelMessageEvent
+        events[995] = typeof(AvailabilityStatusMessageEvent);   // @see HabboMessages.as: _events[3449] = AvailabilityStatusMessageEvent
+        events[2082] = typeof(AccountPreferencesMessageEvent);   // @see HabboMessages.as: _events[2641] = class_219
+        events[2981]  = typeof(AccountSafetyLockMessageEvent);    // @see HabboMessages.as: _events[654]  = class_217
+        events[3401]  = typeof(EmailStatusMessageEvent);          // @see HabboMessages.as: _events[712]  = class_547
 
         // --- Navigator ---
         events[3969] = typeof(NavigatorSettingsEvent);

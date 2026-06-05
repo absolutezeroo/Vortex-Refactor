@@ -19,7 +19,7 @@ public class PetInfoMessageEventParser : IMessageParser
     public bool Parse(IMessageDataWrapper param1)
     {
         // TODO(as3-port): verify wire format order from AS3 source
-        var info = new PetInfo
+        PetInfo info = new PetInfo
         {
             petId              = param1.ReadInteger(),
             level              = param1.ReadInteger(),
@@ -48,7 +48,7 @@ public class PetInfoMessageEventParser : IMessageParser
             accessRights       = param1.ReadInteger(),
         };
         int thresholdCount = param1.ReadInteger();
-        var thresholds = new List<int>(thresholdCount);
+        List<int> thresholds = new List<int>(thresholdCount);
         for (int i = 0; i < thresholdCount; i++)
         {
             thresholds.Add(param1.ReadInteger());

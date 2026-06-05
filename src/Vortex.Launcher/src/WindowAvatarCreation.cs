@@ -39,8 +39,8 @@ public partial class WindowAvatarCreation : Control
 
     private const string DEFAULT_FIGURE = "hd-180-1.ch-255-66.lg-280-110.sh-305-62.ha-1012-110.hr-828-61";
     private const int DISPLAY_SIZE = 200;
-    private const string DEFAULT_DOWNLOAD_URL = "http://habbo-swf.local/gordon/flash-assets-PRODUCTION-202407091256-704579380/";
-    private const string DEFAULT_FIGUREDATA_URL = "http://habbo-swf.local/gamedata/figuredata.xml";
+    private const string DEFAULT_DOWNLOAD_URL = "http://vortex-assets.local/gordon/vortex-assets-PRODUCTION-202601121522-867048149/";
+    private const string DEFAULT_FIGUREDATA_URL = "http://vortex-assets.local/gamedata/figuredata.xml";
 
     // Action presets: label -> (actionType, actionParam)
     private static readonly (string Label, string ActionType, string? Param)[] ACTION_PRESETS =

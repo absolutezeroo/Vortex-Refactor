@@ -26,13 +26,13 @@ public class PresentHandler : BaseHandler
     /// @see PresentHandler.as::onPresentOpened
     private void OnPresentOpened(IMessageEvent ev)
     {
-        var parser = (ev as MessageEvent)?.parser as PresentOpenedMessageEventParser;
+        PresentOpenedMessageEventParser? parser = (ev as MessageEvent)?.parser as PresentOpenedMessageEventParser;
         if (parser == null)
         {
             return;
         }
 
-        var session = listener?.GetSession(currentRoomId);
+        IRoomSession? session = listener?.GetSession(currentRoomId);
         if (session == null)
         {
             return;

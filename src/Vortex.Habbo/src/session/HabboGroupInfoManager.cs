@@ -2,6 +2,7 @@
 
 using Vortex.Core.Communication.Messages;
 using Vortex.Core.Runtime;
+using Vortex.Habbo.Communication;
 using Vortex.Habbo.Communication.Messages.Incoming.Room.Session;
 using Vortex.Habbo.Communication.Messages.Incoming.Users;
 
@@ -20,7 +21,7 @@ public class HabboGroupInfoManager : IDisposable
     {
         _sessionDataManager = sessionDataManager;
 
-        var comm = _sessionDataManager.communication;
+        IHabboCommunicationManager? comm = _sessionDataManager.communication;
         if (comm != null)
         {
             _roomReadyEvent = comm.AddHabboConnectionMessageEvent(
@@ -40,7 +41,7 @@ public class HabboGroupInfoManager : IDisposable
             return;
         }
 
-        var comm = _sessionDataManager.communication;
+        IHabboCommunicationManager? comm = _sessionDataManager.communication;
         if (comm != null)
         {
             if (_roomReadyEvent != null)

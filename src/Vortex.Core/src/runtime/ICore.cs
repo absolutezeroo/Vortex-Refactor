@@ -23,7 +23,7 @@ public interface ICore : IContext, ICoreConfiguration
     void Resume();
 
     /// @see WIN63-202407091256-704579380-Source-main/core/runtime/ICore.as::get fileProxy
-    IClass67? fileProxy { get; }
+    IFileProxy? fileProxy { get; }
 
     /// @see WIN63-202407091256-704579380-Source-main/core/runtime/ICore.as::writeDictionaryToProxy
     bool WriteDictionaryToProxy(string param1, Dictionary<string, object?> param2);

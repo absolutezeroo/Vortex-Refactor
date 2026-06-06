@@ -156,7 +156,6 @@ Nombreux composers et managers non portés (l.159, 321, 393, 602–638, 869, 947
 
 ## 9. Divers
 
-- `HabboAirMain.cs:194` — `FileProxy` AIR non porté (assigné null)
 - `Component.cs:337` — Trace sink pour unlock logging
 - `CoreComponentContext.cs:112,360,705` — Profiler + ProfilerViewer non portés
 - `ProfilerOutput.cs:61–135` — 8 méthodes profiler UI non câblées

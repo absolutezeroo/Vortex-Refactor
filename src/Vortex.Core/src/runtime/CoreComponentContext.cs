@@ -40,7 +40,7 @@ public sealed class CoreComponentContext : ComponentContext, ICore
     private const string CONFIG_XML_NODE_COMPONENT_LIBRARY = "library";
 
     /// @see WIN63-202407091256-704579380-Source-main/core/runtime/CoreComponentContext.as::var_1203
-    private static IClass67? var_1203;
+    private static IFileProxy? var_1203;
 
     /// @see WIN63-202407091256-704579380-Source-main/core/runtime/CoreComponentContext.as::hasLockedComponents
     private static readonly FieldInfo? AttachedComponentsField =
@@ -137,7 +137,7 @@ public sealed class CoreComponentContext : ComponentContext, ICore
 
     /// @see WIN63-202407091256-704579380-Source-main/core/runtime/CoreComponentContext.as::set fileProxy
     /// @see WIN63-202407091256-704579380-Source-main/core/runtime/CoreComponentContext.as::get fileProxy
-    public IClass67? fileProxy
+    public IFileProxy? fileProxy
     {
         get => var_1203;
         set => var_1203 = value;

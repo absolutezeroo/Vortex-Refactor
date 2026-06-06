@@ -5,7 +5,7 @@ using System;
 namespace Vortex.Core.Utils;
 
 /// @see WIN63-202407091256-704579380-Source-main/core/utils/class_67.as
-public interface IClass67
+public interface IFileProxy
 {
     /// @see WIN63-202407091256-704579380-Source-main/core/utils/class_67.as::clearCache
     void ClearCache();

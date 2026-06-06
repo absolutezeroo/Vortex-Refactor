@@ -81,6 +81,7 @@ canonical C# name. See `docs/FIDELITY_BOUNDARY.md` for why these renames are all
 |---|---|---|---|---|---|
 | `class_3739` | `IWindowService` | Interface | `core/window/services/class_3739.as` | proposed | Members `DisposeService()`, `Begin/End(IWindow)`. Likely base service contract; confirm vs named services. |
 | `class_3394` | `IProfilerView` | Interface | `core/window/tools/class_3394.as` | proposed | Member `Visible`; `tools/` dir alongside `ProfilerOutput`. Confirm. |
+| `class_67` | `IFileProxy` | Interface | `core/utils/class_67.as` | confirmed | Members `ReadCache`, `WriteCache`, local/cache path helpers; AIR implementor is `com.sulake.air.FileProxy`. |
 | `class_3441` | _TBD_ | Interface | `core/window/utils/class_3441.as` | proposed | Extends `IClass3348` (outside window tree). Resolve the pair against dump. |
 | `class_3562` | _TBD_ | Interface | `core/window/utils/class_3562.as` | proposed | Member `Visible` only. Insufficient signal — confirm against dump. |
 

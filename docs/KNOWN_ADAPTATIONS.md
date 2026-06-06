@@ -96,3 +96,11 @@ Use one entry per adaptation:
 - Godot/C# adaptation: Manifest loading resolves the generated AS3 static asset field and its `[Embed(source=...)]` file in the source dump, then stores those bytes in the C# asset.
 - Why behavior is preserved: The bytes come from the same dump files referenced by the generated AS3 classes; only Flash's compile-time embed lookup is replaced by a runtime lookup over the extracted source tree.
 - Risk level (Low/Medium/High): Medium
+
+## [Core] AIR FileProxy Cache Mapping
+- Source reference: `WIN63-202111081545-75921380-Source-main/src/HabboAirMain.as::prepareCore`, `WIN63-202111081545-75921380-Source-main/src/com/sulake/air/FileProxy.as`
+- Target file: `src/Vortex.Launcher/src/HabboAirMain.cs`, `src/Vortex.Launcher/src/FileProxy.cs`
+- Original behavior: AIR assigns `new FileProxy()` to `CoreComponentContext.fileProxy`; the proxy exposes local/cache path helpers and byte-array cache read/write methods.
+- Godot/C# adaptation: The launcher assigns a Godot/.NET `FileProxy` that maps cache files to `user://com.sulake.habbo/` and local files to `res://local_include/`.
+- Why behavior is preserved: The core still talks through the same `IFileProxy` contract; only AIR filesystem APIs are replaced with Godot project/user paths and .NET file IO.
+- Risk level (Low/Medium/High): Low

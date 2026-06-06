@@ -200,8 +200,7 @@ public partial class HabboAirMain : Control
 
             if (_core is CoreComponentContext coreComponentContext)
             {
-                // TODO(window-port): Port AIR FileProxy and assign it here.
-                coreComponentContext.fileProxy = null;
+                coreComponentContext.fileProxy = new FileProxy();
             }
 
             safeStr_415 = (int)(_core.GetNumberOfFilesPending() + _core.GetNumberOfFilesLoaded()) + INIT_STEPS;

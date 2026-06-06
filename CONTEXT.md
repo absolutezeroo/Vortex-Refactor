@@ -1,7 +1,8 @@
 # Project Context
 
 ## Goal
-This repository ports Habbo client logic to Godot 4.6 + C# (`net8.0`) while preserving original behavior.
+Target framework: net9.0 (must match Directory.Build.props). Runtime feature constraints under
+Godot: see docs/GODOT_RUNTIME_NOTES.md.
 
 ## Source Of Truth
 - `sources/WIN63-202407091256-704579380-Source-main/`: primary source for all application logic.

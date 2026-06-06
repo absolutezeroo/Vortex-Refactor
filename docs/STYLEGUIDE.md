@@ -96,3 +96,24 @@ public override void UseObject()
 - Preserve original semantics from source dumps.
 - Keep adaptations minimal and engine-focused (Godot lifecycle, API mapping, integration glue).
 - For communication types (`Manager`, `Outgoing`, `Incoming`, `Parser`), follow `docs/COMMUNICATION_EXAMPLES.md` as required structure baseline.
+
+## Modernization Within Fidelity
+
+See docs/FIDELITY_BOUNDARY.md and docs/MODERNIZATION_CATALOG.md. Summary:
+
+- Preserve semantics exactly (control flow, payload order, message IDs, string/numeric values,
+  lifecycle timing, error/presence behavior). Modernize representation freely (names, the C# type
+  used to express a value, idiomatic constructs) when behavior is byte-for-byte identical.
+- Prefer `[Flags] enum` over `static class` of `uint`/`int` flag constants; keep values identical.
+- Do not expose `List<object>` or `params object?[]` for source-defined data; use typed overloads.
+- String event/parameter names are kept as constants matching source; never a raw literal at a
+  call site, never an altered value.
+- Use FrozenDictionary/FrozenSet for build-once read-many dispatch tables; Span + BinaryPrimitives
+  for the EvaWireFormat byte path. Confirm runtime features per docs/GODOT_RUNTIME_NOTES.md.
+
+## Forbidden Identifiers
+
+No decompiler artifacts in identifiers you write or touch: `class_NNNN`, `IClass_NNNN`,
+`var_NNNN`, `param1`/`param2`/... in type, member, parameter, local, or file names. When you touch
+a file containing these, de-obfuscate them, keep the `@see` anchor, and log the rename in
+docs/RENAME_MAP.md.

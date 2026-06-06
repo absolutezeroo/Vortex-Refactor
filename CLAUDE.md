@@ -137,6 +137,19 @@ Subdirectories: `data/`, `events/`, `messages/`, `object/`, `renderer/`, `utils/
 
 Conventional Commits with scope: `feat(core):`, `refactor(runtime):`, `fix(communication):`, etc. Imperative, specific subjects.
 
+### Naming vs Semantics
+
+Behavior must mirror the AS3 source; names need not. Decompiler artifacts (class_NNNN, var_NNNN,
+paramN) are not source and must be de-obfuscated, not reproduced. Keep the @see anchor; log renames
+in docs/RENAME_MAP.md. Preserve flag/enum values, payload order, message IDs, event string values,
+and error/presence behavior exactly; the type expressing them may be modern (see
+docs/FIDELITY_BOUNDARY.md and docs/MODERNIZATION_CATALOG.md).
+
+### When a port misbehaves
+
+Diff against the @see AS3 file first. The common cause is a dropped class, parameter, or throw —
+not a logic bug in the port. See docs/AS3_DISCREPANCIES.md.
+
 ## Mandatory References for Specific Work
 
 - Communication layer changes → `docs/COMMUNICATION_EXAMPLES.md` + `docs/COMMUNICATION_CHECKLIST.md`

@@ -101,17 +101,22 @@ public static class SkinParserUtil
             // @see class_3503.as — _loc28_ = param2.getAssetByName(_loc27_); renderer.parse(_loc28_, ...)
             IAsset? skinAsset = string.IsNullOrEmpty(assetName) ? null : assets.GetAssetByName(assetName);
 
+            // AS3 calls renderer.parse(_loc28_, ...) with no null guard; a missing required asset
+            // would throw inside parse(). Fail loudly here to surface the error at the right level.
+            // Renderers with no asset (empty assetName) are intentional and remain silent.
+            if (!string.IsNullOrEmpty(assetName) && skinAsset == null)
+            {
+                throw new InvalidOperationException(
+                    $"SkinParserUtil: required skin asset '{assetName}' not found " +
+                    $"(type='{typeName}' renderer='{rendererType}')");
+            }
+
             if (skinAsset != null && !assetsToDispose.Contains(skinAsset))
             {
                 assetsToDispose.Add(skinAsset);
             }
 
             renderer.Parse(skinAsset?.Content as XElement, inlineStates, imageResolver);
-
-            if (skinAsset == null)
-            {
-                GD.PrintErr($"[SkinParserUtil] template MISS type='{typeName}' renderer='{rendererType}' asset='{assetName}'");
-            }
 
             // Build DefaultAttStruct
             DefaultAttStruct defaults = new()

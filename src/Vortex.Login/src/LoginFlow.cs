@@ -6,6 +6,7 @@ using System.Text.Json.Nodes;
 
 using Godot;
 
+using Vortex.Bootstrap;
 using Vortex.Core;
 using Vortex.Core.Runtime;
 using Vortex.IID;

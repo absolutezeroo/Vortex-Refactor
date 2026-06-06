@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 namespace Vortex.Core.Localization;
 
 /// @see WIN63-202407091256-704579380-Source-main/core/localization/Localization.as
-public class Localization
+public class Localization : ILocalization
 {
     private readonly ICoreLocalizationManager _manager;
     private readonly string _key;
@@ -19,11 +19,13 @@ public class Localization
         raw = param3;
     }
 
+    public bool isInitialized { get; }
+
     /// @see WIN63-202407091256-704579380-Source-main/core/localization/Localization.as::get value
     public string value => FillParameterValues();
 
     /// @see WIN63-202407091256-704579380-Source-main/core/localization/Localization.as::get raw
-    public string? raw { get; private set; }
+    public string raw { get; private set; }
 
     /// @see WIN63-202407091256-704579380-Source-main/core/localization/Localization.as::setValue
     public void SetValue(string param1)

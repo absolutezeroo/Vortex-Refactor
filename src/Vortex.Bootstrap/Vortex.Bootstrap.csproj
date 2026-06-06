@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Vortex</RootNamespace>
+    <RootNamespace>Vortex.Bootstrap</RootNamespace>
     <AssemblyName>Vortex.Bootstrap</AssemblyName>
   </PropertyGroup>
   <ItemGroup>

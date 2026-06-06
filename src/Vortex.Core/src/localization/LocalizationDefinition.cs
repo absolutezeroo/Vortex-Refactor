@@ -1,7 +1,7 @@
 namespace Vortex.Core.Localization;
 
 /// @see WIN63-202407091256-704579380-Source-main/core/localization/LocalizationDefinition.as
-public class LocalizationDefinition
+public class LocalizationDefinition : ILocalizationDefinition
 {
     /// @see WIN63-202407091256-704579380-Source-main/core/localization/LocalizationDefinition.as::LocalizationDefinition
     public LocalizationDefinition(string param1, string param2, string param3)

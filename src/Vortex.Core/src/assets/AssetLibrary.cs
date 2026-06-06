@@ -1,7 +1,9 @@
 // @see core/assets/AssetLibrary.as
 
 using System;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
 
 using Vortex.Core.Assets.Loaders;
@@ -26,6 +28,8 @@ public class AssetLibrary : IAssetLibrary
 
     /// @see AssetLibrary.as::_sharedListOfTypesByMime
     private static Dictionary<string, AssetTypeDeclaration>? _sharedTypesByMime;
+    private static readonly Dictionary<string, byte[]?> _manifestAssetContent = new(StringComparer.Ordinal);
+
     private string? _name;
     private XElement? _manifest;
 
@@ -466,9 +470,14 @@ public class AssetLibrary : IAssetLibrary
                     continue;
                 }
 
-                // @see AssetLibrary.as — AS3 uses param2[assetName] to get embedded content.
-                // In C# we don't have embedded Class resources — content comes from file loading.
-                // For manifest-based loading, assets start with null content (lazy-loaded later).
+                // @see AssetLibrary.as - AS3 uses param2[assetName] to get embedded content.
+                // Godot/C# adaptation: resolve equivalent committed project assets by manifest name.
+                byte[]? embeddedContent = ResolveManifestAssetContent(assetName, mimeType);
+
+                if (embeddedContent != null)
+                {
+                    asset.SetUnknownContent(embeddedContent);
+                }
 
                 IEnumerable<XElement> paramElements = assetElement.Elements("param");
                 List<XElement> paramList = paramElements.ToList();
@@ -571,6 +580,142 @@ public class AssetLibrary : IAssetLibrary
                 return null;
             }
         }
+    }
+
+    private static byte[]? ResolveManifestAssetContent(string assetName, string? mimeType)
+    {
+        string cacheKey = (mimeType ?? "") + "|" + assetName;
+
+        if (_manifestAssetContent.TryGetValue(cacheKey, out byte[]? cached))
+        {
+            return cached;
+        }
+
+        foreach (string candidate in EnumerateManifestAssetCandidates(assetName, mimeType))
+        {
+            if (!File.Exists(candidate))
+            {
+                continue;
+            }
+
+            byte[] bytes = File.ReadAllBytes(candidate);
+            _manifestAssetContent[cacheKey] = bytes;
+
+            return bytes;
+        }
+
+        _manifestAssetContent[cacheKey] = null;
+
+        return null;
+    }
+
+    private static IEnumerable<string> EnumerateManifestAssetCandidates(string assetName, string? mimeType)
+    {
+        string normalizedName = NormalizeManifestAssetName(assetName);
+        string snakeCaseName = ToSnakeCase(assetName);
+
+        string[] names = new[]
+        {
+            assetName,
+            normalizedName,
+            snakeCaseName,
+            NormalizeManifestAssetName(snakeCaseName),
+        }.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+
+        foreach (string extension in GetFileExtensionsForMimeType(mimeType))
+        {
+            foreach (string directory in GetAssetDirectoriesForMimeType(mimeType))
+            {
+                foreach (string name in names)
+                {
+                    yield return Path.Combine(directory, name + extension);
+                }
+            }
+        }
+    }
+
+    private static string NormalizeManifestAssetName(string assetName)
+    {
+        string[] suffixes =
+        [
+            "_png",
+            "_jpg",
+            "_jpeg",
+            "_gif",
+            "_xml",
+            "_txt",
+        ];
+
+        foreach (string suffix in suffixes)
+        {
+            if (assetName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+            {
+                return assetName[..^suffix.Length];
+            }
+        }
+
+        return assetName;
+    }
+
+    private static string[] GetAssetDirectoriesForMimeType(string? mimeType)
+    {
+        return mimeType switch
+        {
+            "image/png" or "image/jpeg" or "image/gif" or "image/tiff" => [Path.Combine("assets", "images")],
+            "text/xml" or "text/html" => [Path.Combine("data", "layouts"), Path.Combine("data", "manifests")],
+            "text/plain" => [Path.Combine("data", "configuration"), Path.Combine("data", "localization"), "data"],
+            _ => [Path.Combine("data", "layouts"), Path.Combine("assets", "images"), "data"],
+        };
+    }
+
+    private static string[] GetFileExtensionsForMimeType(string? mimeType)
+    {
+        return mimeType switch
+        {
+            "image/png" => [".png"],
+            "image/jpeg" => [".jpg", ".jpeg"],
+            "image/gif" => [".gif"],
+            "image/tiff" => [".tif", ".tiff"],
+            "text/xml" or "text/html" => [".xml"],
+            "text/plain" => [".txt"],
+            _ => [".xml", ".txt", ".png", ".jpg", ".jpeg", ".gif"],
+        };
+    }
+
+    private static string ToSnakeCase(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return value;
+        }
+
+        StringBuilder builder = new(value.Length + 8);
+
+        for (int i = 0;
+             i < value.Length;
+             i++)
+        {
+            char c = value[i];
+
+            if (char.IsUpper(c))
+            {
+                bool hasPrevious = i > 0;
+                bool previousIsLowerOrDigit = hasPrevious && (char.IsLower(value[i - 1]) || char.IsDigit(value[i - 1]));
+                bool nextIsLower = i + 1 < value.Length && char.IsLower(value[i + 1]);
+
+                if (hasPrevious && (previousIsLowerOrDigit || nextIsLower))
+                {
+                    builder.Append('_');
+                }
+
+                builder.Append(char.ToLowerInvariant(c));
+                continue;
+            }
+
+            builder.Append(c);
+        }
+
+        return builder.ToString();
     }
 
     private static string? ExtractFileExtension(string fileName)

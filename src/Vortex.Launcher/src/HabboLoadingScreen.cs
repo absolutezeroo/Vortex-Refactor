@@ -9,6 +9,7 @@ using System.Xml.Linq;
 
 using Godot;
 
+using Vortex.Bootstrap;
 using Vortex.Core.Assets;
 using Vortex.Habbo.Configuration;
 using Vortex.Habbo.Configuration.Enum;

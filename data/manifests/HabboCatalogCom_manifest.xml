@@ -2,7 +2,7 @@
 <manifest>
 
 	<component class="bootstrap.HabboCatalogBootstrap" version="0.0">
-		<interface iid="com.sulake.iid.IIDHabboCatalog" />
+		<interface iid="iid.IIDHabboCatalog" />
 		<assets>
 
 			<!-- Generated From PNGs in assets -->

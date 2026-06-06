@@ -5,6 +5,7 @@ using System.Xml.Linq;
 
 using Godot;
 
+using Vortex.Bootstrap;
 using Vortex.Core;
 using Vortex.Core.Runtime;
 using Vortex.Core.Runtime.Events;

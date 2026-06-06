@@ -32,6 +32,9 @@ public static class SkinParserUtil
     // Build-once, read-many dispatch tables. FrozenDictionary gives faster lookups on hot paths
     // (GetSkinRendererByTypeAndStyle is called every skin apply). See docs/MODERNIZATION_CATALOG.md.
     private static readonly FrozenDictionary<string, uint> _nameToType;
+
+    // @see class_3503.as — nameToState is built alongside nameToType; used by renderer state parsing.
+    internal static readonly FrozenDictionary<string, uint> _nameToState;
     private static readonly FrozenDictionary<string, Func<string?, ISkinRenderer>> _rendererFactories;
 
     static SkinParserUtil()
@@ -40,8 +43,9 @@ public static class SkinParserUtil
         TypeCodeTable.FillTables(nameToType);
         _nameToType = nameToType.ToFrozenDictionary();
 
-        // TODO(as3-port): nameToState is built by class_3503.as but inline state parsing
-        // is not ported yet; add when skin state XML attributes are implemented.
+        Dictionary<string, uint> nameToState = new();
+        StateCodeTable.FillTables(nameToState);
+        _nameToState = nameToState.ToFrozenDictionary();
 
         _rendererFactories = new Dictionary<string, Func<string?, ISkinRenderer>>
         {

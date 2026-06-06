@@ -1,6 +1,7 @@
 // @see habbo/window/utils/class_3503.as
 
 using System;
+using System.Collections.Frozen;
 using System.Xml.Linq;
 
 using Godot;
@@ -28,40 +29,43 @@ public static class SkinParserUtil
     private const string RENDERER_TYPE_UNKNOWN = "unknown";
     private const string RENDERER_TYPE_NULL = "null";
 
+    // Build-once, read-many dispatch tables. FrozenDictionary gives faster lookups on hot paths
+    // (GetSkinRendererByTypeAndStyle is called every skin apply). See docs/MODERNIZATION_CATALOG.md.
+    private static readonly FrozenDictionary<string, uint> _nameToType;
+    private static readonly FrozenDictionary<string, Func<string?, ISkinRenderer>> _rendererFactories;
+
+    static SkinParserUtil()
+    {
+        Dictionary<string, uint> nameToType = new();
+        TypeCodeTable.FillTables(nameToType);
+        _nameToType = nameToType.ToFrozenDictionary();
+
+        // TODO(as3-port): nameToState is built by class_3503.as but inline state parsing
+        // is not ported yet; add when skin state XML attributes are implemented.
+
+        _rendererFactories = new Dictionary<string, Func<string?, ISkinRenderer>>
+        {
+            [RENDERER_TYPE_SKIN]     = name => new BitmapSkinRenderer(name ?? ""),
+            [RENDERER_TYPE_BITMAP]   = name => new BitmapDataRenderer(name ?? ""),
+            [RENDERER_TYPE_FILL]     = name => new FillSkinRenderer(name ?? ""),
+            [RENDERER_TYPE_TEXT]     = name => new TextSkinRenderer(name ?? ""),
+            [RENDERER_TYPE_LABEL]    = name => new LabelRenderer(name ?? ""),
+            [RENDERER_TYPE_SHAPE]    = name => new ShapeSkinRenderer(name ?? ""),
+            [RENDERER_TYPE_UNKNOWN]  = name => new SkinRenderer(name ?? ""),
+            [RENDERER_TYPE_NULL]     = name => new NullSkinRenderer(name ?? ""),
+        }.ToFrozenDictionary();
+    }
+
     /// @see habbo/window/utils/class_3503.as::parse
     public static void Parse(XElement elementDescription, IAssetLibrary assets, SkinContainer skinContainer)
     {
-        // 1. Build lookup tables
-        Dictionary<string, uint> nameToType = new();
-        Dictionary<uint, string> typeToName = new();
-
-        TypeCodeTable.FillTables(nameToType, typeToName);
-
-        Dictionary<string, uint> nameToState = new();
-        Dictionary<uint, string> stateToName = new();
-
-        StateCodeTable.FillTables(nameToState, stateToName);
-
-        // 2. Renderer type → factory map
-        Dictionary<string, Func<string?, ISkinRenderer>> rendererFactories = new()
-        {
-            [RENDERER_TYPE_SKIN] = name => new BitmapSkinRenderer(name ?? ""),
-            [RENDERER_TYPE_BITMAP] = name => new BitmapDataRenderer(name ?? ""),
-            [RENDERER_TYPE_FILL] = name => new FillSkinRenderer(name ?? ""),
-            [RENDERER_TYPE_TEXT] = name => new TextSkinRenderer(name ?? ""),
-            [RENDERER_TYPE_LABEL] = name => new LabelRenderer(name ?? ""),
-            [RENDERER_TYPE_SHAPE] = name => new ShapeSkinRenderer(name ?? ""),
-            [RENDERER_TYPE_UNKNOWN] = name => new SkinRenderer(name ?? ""),
-            [RENDERER_TYPE_NULL] = name => new NullSkinRenderer(name ?? ""),
-        };
-
         // @see class_3503.as — image resolver wraps param2:IAssetLibrary for template bitmap lookups
         Func<string, Image?> imageResolver = name => assets.GetAssetByName(name)?.Content as Image;
 
         // @see class_3503.as — _loc22_: tracks used skin assets for disposal after parsing
         List<IAsset> assetsToDispose = [];
 
-        // 3. Iterate <window> elements
+        // Iterate <window> elements
         IEnumerable<XElement> windows = elementDescription.Elements("window");
         uint parsedCount = 0;
 
@@ -77,7 +81,7 @@ public static class SkinParserUtil
             XElement? inlineStates = windowEl.Element("states");
 
             // Resolve type ID
-            if (!nameToType.TryGetValue(typeName, out uint typeId))
+            if (!_nameToType.TryGetValue(typeName, out uint typeId))
             {
                 continue;
             }
@@ -91,7 +95,7 @@ public static class SkinParserUtil
             uint color = ParseUintAttr(windowEl, "color", 0xFFFFFF);
 
             // Create renderer from factory
-            if (!rendererFactories.TryGetValue(rendererType, out Func<string?, ISkinRenderer>? factory))
+            if (!_rendererFactories.TryGetValue(rendererType, out Func<string?, ISkinRenderer>? factory))
             {
                 continue;
             }

@@ -73,6 +73,14 @@ Use one entry per adaptation:
 - Why behavior is preserved: The node is still removed from its parent; only the timing shifts to the next idle frame, which is equivalent to Flash's deferred display list removal.
 - Risk level: Low
 
+## [Window Manager] Skin Init Asset Library Fallback
+- Source reference: `WIN63-202407091256-704579380-Source-main/habbo/window/HabboWindowManagerComponent.as::initComponent`
+- Target file: `src/Vortex.Habbo/src/window/HabboWindowManagerComponent.cs`
+- Original behavior: `initComponent` receives a non-null `IAssetLibrary` via constructor and calls `findAssetByName("habbo_element_description_xml")` from the component's pre-populated local storage.
+- Godot/C# adaptation: Bootstrap passes `null` as the `assets` constructor parameter; the component falls back to `HabboFileSystemAssetLibrary` (same adapter used by `WindowSystemCreation`). Element-description XML is read from local storage first; if not preloaded, it is fetched from the library via `GetAssetByName`.
+- Why behavior is preserved: The same XML is parsed by the same `SkinParserUtil.Parse` call with the same `IAssetLibrary` contract. Bitmap and skin-XML asset lookups within the parse all route through `HabboFileSystemAssetLibrary`, which delegates to `HabboAssetResolver`. Throw on truly-missing element-description is preserved.
+- Risk level: Low
+
 ## [Session Data] HTTP Text Loading
 - Source reference: `WIN63-202407091256-704579380-Source-main/habbo/session/SessionDataManager.as::initFurnitureData`, `FurnitureDataParser.as::loadData`, `ProductDataParser.as::ProductDataParser`
 - Target file: `src/Vortex.Habbo/src/session/SessionDataManager.cs`, `src/Vortex.Habbo/src/session/furniture/FurnitureDataParser.cs`, `src/Vortex.Habbo/src/session/product/ProductDataParser.cs`

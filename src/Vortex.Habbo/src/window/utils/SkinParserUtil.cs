@@ -5,6 +5,7 @@ using System.Xml.Linq;
 
 using Godot;
 
+using Vortex.Core.Assets;
 using Vortex.Core.Window.Graphics;
 using Vortex.Core.Window.Graphics.Renderer;
 using Vortex.Core.Window.Utils;
@@ -28,7 +29,7 @@ public static class SkinParserUtil
     private const string RENDERER_TYPE_NULL = "null";
 
     /// @see habbo/window/utils/class_3503.as::parse
-    public static void Parse(XElement elementDescription, SkinContainer skinContainer)
+    public static void Parse(XElement elementDescription, IAssetLibrary assets, SkinContainer skinContainer)
     {
         // 1. Build lookup tables
         Dictionary<string, uint> nameToType = new();
@@ -53,6 +54,12 @@ public static class SkinParserUtil
             [RENDERER_TYPE_UNKNOWN] = name => new SkinRenderer(name ?? ""),
             [RENDERER_TYPE_NULL] = name => new NullSkinRenderer(name ?? ""),
         };
+
+        // @see class_3503.as — image resolver wraps param2:IAssetLibrary for template bitmap lookups
+        Func<string, Image?> imageResolver = name => assets.GetAssetByName(name)?.Content as Image;
+
+        // @see class_3503.as — _loc22_: tracks used skin assets for disposal after parsing
+        List<IAsset> assetsToDispose = [];
 
         // 3. Iterate <window> elements
         IEnumerable<XElement> windows = elementDescription.Elements("window");
@@ -88,11 +95,15 @@ public static class SkinParserUtil
 
             ISkinRenderer renderer = factory(layoutName);
 
-            // Load skin XML asset and parse via renderer
-            XElement? skinXml = string.IsNullOrEmpty(assetName) ? null : HabboAssetResolver.LoadXmlAsset(assetName);
-            XElement? inlineStatesForParse = inlineStates;
+            // @see class_3503.as — _loc28_ = param2.getAssetByName(_loc27_); renderer.parse(_loc28_, ...)
+            IAsset? skinAsset = string.IsNullOrEmpty(assetName) ? null : assets.GetAssetByName(assetName);
 
-            renderer.Parse(skinXml, inlineStatesForParse, HabboAssetResolver.LoadImageAsset);
+            if (skinAsset != null && !assetsToDispose.Contains(skinAsset))
+            {
+                assetsToDispose.Add(skinAsset);
+            }
+
+            renderer.Parse(skinAsset?.Content as XElement, inlineStates, imageResolver);
 
             // Build DefaultAttStruct
             DefaultAttStruct defaults = new()
@@ -107,17 +118,23 @@ public static class SkinParserUtil
                 HeightMax = ParseIntAttr(windowEl, "height_max", int.MaxValue),
             };
 
-            // Resolve optional window_layout XML
+            // @see class_3503.as — param2.getAssetByName(_loc25_)?.content as XML
             XElement? windowLayoutXml = null;
 
             if (!string.IsNullOrEmpty(windowLayoutName))
             {
-                windowLayoutXml = HabboAssetResolver.LoadXmlAsset(windowLayoutName);
+                windowLayoutXml = assets.GetAssetByName(windowLayoutName)?.Content as XElement;
             }
 
             // Register in SkinContainer
             skinContainer.AddSkinRenderer(typeId, style, intent, renderer, windowLayoutXml, defaults);
             parsedCount++;
+        }
+
+        // @see class_3503.as — dispose used skin assets after parsing
+        foreach (IAsset a in assetsToDispose)
+        {
+            a.Dispose();
         }
 
         GD.Print($"[SkinParserUtil] Parsed {parsedCount} skin renderer entries.");

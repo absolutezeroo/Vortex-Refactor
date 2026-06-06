@@ -313,10 +313,14 @@ public class HabboCommunicationManager : Component, IHabboCommunicationManager, 
 
         if (PacketLogger.Enabled && int.TryParse(param1, out int id))
         {
-            if (_messages.events.TryGetValue(id, out System.Type? t))
+            if (_messages.events.TryGetValue(id, out Type? t))
+            {
                 PacketLogger.LogIncoming(id, t.Name);
+            }
             else
+            {
                 PacketLogger.LogUnknownIncoming(id);
+            }
         }
     }
 
@@ -341,7 +345,7 @@ public class HabboCommunicationManager : Component, IHabboCommunicationManager, 
 
         if (PacketLogger.Enabled && int.TryParse(param1, out int id))
         {
-            string name = _messages.composers.TryGetValue(id, out System.Type? t) ? t.Name : "Unknown";
+            string name = _messages.composers.TryGetValue(id, out Type? t) ? t.Name : "Unknown";
             PacketLogger.LogOutgoing(id, name);
         }
     }
@@ -355,7 +359,7 @@ public class HabboCommunicationManager : Component, IHabboCommunicationManager, 
         if (PacketLogger.Enabled)
         {
             int id = param1.GetId();
-            string name = _messages.events.TryGetValue(id, out System.Type? t) ? t.Name : "Unknown";
+            string name = _messages.events.TryGetValue(id, out Type? t) ? t.Name : "Unknown";
             PacketLogger.LogParseError(id, name);
         }
     }

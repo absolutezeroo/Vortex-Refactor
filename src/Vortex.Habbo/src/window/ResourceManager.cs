@@ -6,6 +6,7 @@ using Godot;
 
 using Vortex.Core.Assets;
 using Vortex.Core.Assets.Loaders;
+using Vortex.Habbo.Window.Utils;
 
 namespace Vortex.Habbo.Window;
 
@@ -87,6 +88,17 @@ public class ResourceManager : IResourceManager
 
         if (_windowManager?.assets is not IAssetLibrary library)
         {
+            // Godot adaptation: asset library not loaded (bootstrap passes null); fall back to filesystem.
+            // Consistent with HabboWindowManagerComponent.EnsureInitialized filesystem fallback pattern.
+            Image? fallbackImage = HabboAssetResolver.LoadImageAsset(resolvedName);
+
+            if (fallbackImage != null)
+            {
+                BitmapDataAsset fallbackAsset = new(null);
+                fallbackAsset.SetUnknownContent(fallbackImage);
+                receiver.ReceiveAsset(fallbackAsset, resolvedName);
+            }
+
             return;
         }
 

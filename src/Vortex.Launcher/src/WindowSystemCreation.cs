@@ -240,7 +240,9 @@ public partial class WindowSystemCreation : Control
 
         if (xml != null)
         {
-            SkinParserUtil.Parse(xml, container);
+            // Godot adaptation: use HabboFileSystemAssetLibrary so Parse receives an IAssetLibrary
+            // (mirrors the component path where HabboWindowManagerComponent passes its own assets).
+            SkinParserUtil.Parse(xml, new HabboFileSystemAssetLibrary(), container);
             Log("Skins loaded from habbo_element_description.xml");
         }
         else

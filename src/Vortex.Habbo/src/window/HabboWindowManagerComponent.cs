@@ -1017,31 +1017,30 @@ public class HabboWindowManagerComponent : Component, IHabboWindowManager, IInpu
         {
             _skinContainer = new SkinContainer();
 
-            // @see HabboWindowManagerComponent.as::initComponent — AS3 uses findAssetByName("habbo_element_description_xml")
-            XElement? elementDescXml = null;
-            object? elementDescAsset = FindAssetByName("habbo_element_description_xml");
-            if (elementDescAsset is Core.Assets.IAsset
-                {
-                    Content: XElement xmlContent,
-                })
-            {
-                elementDescXml = xmlContent;
-            }
-            else if (_assets is Core.Assets.IAssetLibrary assetLib)
-            {
-                IAsset? libAsset = assetLib.GetAssetByName("habbo_element_description_xml");
-                if (libAsset?.Content is XElement libXml)
-                {
-                    elementDescXml = libXml;
-                }
-            }
-            // Godot adaptation: fallback to filesystem when asset library has no content loaded
-            elementDescXml ??= HabboAssetResolver.LoadXmlAsset("habbo_element_description_xml");
+            // @see HabboWindowManagerComponent.as::initComponent
+            // AS3: var asset:IAsset = findAssetByName("habbo_element_description_xml");
+            //      class_3503.parse(asset.content as XML, assets, _skinContainer);
+            // Godot adaptation: bootstrap passes null as assets; fall back to HabboFileSystemAssetLibrary
+            // (same adapter used by WindowSystemCreation). Element-description read from local storage first;
+            // if not preloaded, fetched from the library (covers the un-wired runtime case).
+            IAssetLibrary assetLib = (_assets as IAssetLibrary) ?? new HabboFileSystemAssetLibrary();
 
-            if (elementDescXml != null)
-            {
-                SkinParserUtil.Parse(elementDescXml, (SkinContainer)_skinContainer);
-            }
+            IAsset? elementDescAsset = (FindAssetByName("habbo_element_description_xml") as IAsset)
+                ?? assetLib.GetAssetByName("habbo_element_description_xml");
+
+            if (elementDescAsset is null)
+                throw new InvalidOperationException(
+                    "Required asset 'habbo_element_description_xml' is missing.");
+
+            XElement elementDescXml = (elementDescAsset.Content as XElement)
+                ?? throw new InvalidOperationException(
+                    "Asset 'habbo_element_description_xml' has no XML content.");
+
+            SkinParserUtil.Parse(elementDescXml, assetLib, (SkinContainer)_skinContainer);
+
+            // @see HabboWindowManagerComponent.as::initComponent — this.removeAsset(asset); asset.dispose()
+            RemoveAsset("habbo_element_description_xml");
+            elementDescAsset.Dispose();
         }
 
         // @see HabboWindowManagerComponent.as — init text style registry and parse CSS

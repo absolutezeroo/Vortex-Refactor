@@ -12,14 +12,22 @@ public static class PacketLogger
     public static bool Enabled { get; set; } = false;
 
     public static void LogIncoming(int id, string typeName)
-        => GD.Print($"[PACKET] ← IN  [{id,5}] {typeName}");
+    {
+        GD.Print($"[PACKET] ← IN  [{id,5}] {typeName}");
+    }
 
     public static void LogOutgoing(int id, string typeName)
-        => GD.Print($"[PACKET] → OUT [{id,5}] {typeName}");
+    {
+        GD.Print($"[PACKET] → OUT [{id,5}] {typeName}");
+    }
 
     public static void LogUnknownIncoming(int id)
-        => GD.PrintErr($"[PACKET] ← IN  [{id,5}] ??? (not registered)");
+    {
+        GD.PrintErr($"[PACKET] ← IN  [{id,5}] ??? (not registered)");
+    }
 
     public static void LogParseError(int id, string typeName)
-        => GD.PrintErr($"[PACKET] ← ERR [{id,5}] {typeName} — parse failed");
+    {
+        GD.PrintErr($"[PACKET] ← ERR [{id,5}] {typeName} — parse failed");
+    }
 }

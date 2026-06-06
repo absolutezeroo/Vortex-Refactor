@@ -1,7 +1,6 @@
 // @see com.sulake.habbo.toolbar.HabboToolbar
 
 using System;
-using System.Xml.Linq;
 
 using Godot;
 
@@ -14,7 +13,6 @@ using Vortex.Core.Window.Events;
 using Vortex.Habbo.Communication;
 using Vortex.Habbo.Toolbar.Events;
 using Vortex.Habbo.Window;
-using Vortex.Habbo.Window.Utils;
 using Vortex.IID;
 
 namespace Vortex.Habbo.Toolbar;
@@ -46,10 +44,10 @@ public class HabboToolbar : Component, IHabboToolbar
 
     private int _currentState = HabboToolbarEnum.TOOLBAR_STATE_HOTEL_VIEW;
     private readonly Dictionary<int, bool> _iconVisibility = new();
-    private readonly Dictionary<int, Image?> _iconBitmaps = new();
     private bool _onDuty;
 
-    private IWindow? _toolbarWindow;
+    private BottomBarLeft? _bottomBarLeft;
+    private IWindowContainer? toolbarWindow => _bottomBarLeft?.window;
     private IDesktopWindow? _desktopWindow;
 
     /// @see com.sulake.habbo.toolbar.HabboToolbar::HabboToolbar
@@ -69,7 +67,7 @@ public class HabboToolbar : Component, IHabboToolbar
                 _windowManager = p as IHabboWindowManager;
                 // InitComponent may have already run before the window manager was resolved (optional dep);
                 // create the toolbar view now if that's the case.
-                if (!locked && _toolbarWindow == null)
+                if (!locked && _bottomBarLeft == null)
                 {
                     CreateToolbarView();
                 }
@@ -92,11 +90,10 @@ public class HabboToolbar : Component, IHabboToolbar
             return;
         }
 
-        if (_toolbarWindow != null)
+        if (_bottomBarLeft != null)
         {
-            _toolbarWindow.procedure = null;
-            _toolbarWindow.Destroy();
-            _toolbarWindow = null;
+            _bottomBarLeft.Dispose();
+            _bottomBarLeft = null;
         }
 
         if (_desktopWindow != null)
@@ -106,7 +103,6 @@ public class HabboToolbar : Component, IHabboToolbar
         }
 
         _iconVisibility.Clear();
-        _iconBitmaps.Clear();
         base.Dispose();
     }
 
@@ -117,7 +113,7 @@ public class HabboToolbar : Component, IHabboToolbar
     {
         get
         {
-            if (_toolbarWindow == null)
+            if (toolbarWindow == null)
             {
                 return 0;
             }
@@ -127,7 +123,7 @@ public class HabboToolbar : Component, IHabboToolbar
                 return COLLAPSED_MARGIN;
             }
 
-            IWindow? line = _toolbarWindow.FindChildByName("line");
+            IWindow? line = toolbarWindow.FindChildByName("line");
 
             return line?.parent != null
                 ? (int)(line.x + line.parent.x)
@@ -149,9 +145,9 @@ public class HabboToolbar : Component, IHabboToolbar
         _currentState = state;
         UpdateIconVisibilityForState(state);
 
-        if (_toolbarWindow != null)
+        if (toolbarWindow != null)
         {
-            _toolbarWindow.visible = state != HabboToolbarEnum.TOOLBAR_STATE_HIDDEN;
+            toolbarWindow.visible = state != HabboToolbarEnum.TOOLBAR_STATE_HIDDEN;
         }
 
         events?.DispatchEvent(new HabboToolbarEvent(HabboToolbarEvent.RESIZED));
@@ -168,23 +164,23 @@ public class HabboToolbar : Component, IHabboToolbar
     /// @see com.sulake.habbo.toolbar.HabboToolbar::setIconBitmap
     public void SetIconBitmap(int iconId, Image? bitmap)
     {
-        _iconBitmaps[iconId] = bitmap;
-        // TODO(assets): push bitmap to icon region's bitmap child when asset pipeline is ready
+        // @see HabboToolbar.as::setIconBitmap — forward to BottomBarLeft; AS3 passes original (not clone)
+        _bottomBarLeft?.SetIconBitmap(iconId, bitmap);
     }
 
     /// @see com.sulake.habbo.toolbar.HabboToolbar::getRect
     public Rect2I GetRect()
     {
-        if (_toolbarWindow == null)
+        if (toolbarWindow == null)
         {
             return default;
         }
 
         return new Rect2I(
-            (int)_toolbarWindow.renderingX,
-            (int)_toolbarWindow.renderingY,
-            (int)_toolbarWindow.renderingWidth,
-            (int)_toolbarWindow.renderingHeight
+            (int)toolbarWindow.renderingX,
+            (int)toolbarWindow.renderingY,
+            (int)toolbarWindow.renderingWidth,
+            (int)toolbarWindow.renderingHeight
         );
     }
 
@@ -205,7 +201,7 @@ public class HabboToolbar : Component, IHabboToolbar
     /// @see com.sulake.habbo.toolbar.HabboToolbar::getIconLocation
     public Vector2I GetIconLocation(int iconId)
     {
-        if (_toolbarWindow == null)
+        if (toolbarWindow == null)
         {
             return Vector2I.Zero;
         }
@@ -217,7 +213,7 @@ public class HabboToolbar : Component, IHabboToolbar
             return Vector2I.Zero;
         }
 
-        IWindow? region = _toolbarWindow.FindChildByName(iconName.ToUpperInvariant());
+        IWindow? region = toolbarWindow.FindChildByName(iconName.ToUpperInvariant());
 
         return region != null
             ? new Vector2I((int)region.renderingX, (int)region.renderingY)
@@ -226,30 +222,25 @@ public class HabboToolbar : Component, IHabboToolbar
 
     // --- Private helpers ---
 
-    /// @see com.sulake.habbo.toolbar.HabboToolbar — build BottomBarLeft from XML via window manager
+    /// @see com.sulake.habbo.toolbar.HabboToolbar::initComponent — delegates to BottomBarLeft
     private void CreateToolbarView()
     {
-        if (_windowManager == null || _toolbarWindow != null)
+        if (_windowManager == null || _bottomBarLeft != null)
         {
             return;
         }
 
-        XElement? xml = HabboAssetResolver.LoadXmlAsset("bottom_bar_left_xml");
+        // @see HabboToolbar.as::initComponent — new BottomBarLeft(this, _windowManager, assets, events)
+        _bottomBarLeft = new BottomBarLeft(
+            this,
+            _windowManager,
+            assets as Core.Assets.IAssetLibrary,
+            events);
 
-        if (xml == null)
+        if (toolbarWindow != null)
         {
-            Logger.Warn("[HabboToolbar] bottom_bar_left_xml not found");
-            return;
+            toolbarWindow.procedure = OnToolbarWindowProcedure;
         }
-
-        _toolbarWindow = _windowManager.BuildFromXml(xml, TOOLBAR_LAYER);
-
-        if (_toolbarWindow == null)
-        {
-            return;
-        }
-
-        _toolbarWindow.procedure = OnToolbarWindowProcedure;
 
         AttachToDesktop();
         SyncAllIconVisibility();
@@ -257,7 +248,7 @@ public class HabboToolbar : Component, IHabboToolbar
 
     private void AttachToDesktop()
     {
-        if (_toolbarWindow == null || _windowManager == null)
+        if (toolbarWindow == null || _windowManager == null)
         {
             return;
         }
@@ -273,9 +264,9 @@ public class HabboToolbar : Component, IHabboToolbar
                 _desktopWindow.AddEventListener(WindowEvent.WE_RESIZED, OnDesktopResized);
             }
 
-            if (_toolbarWindow.parent == null)
+            if (toolbarWindow.parent == null)
             {
-                desktop.AddChild(_toolbarWindow);
+                desktop.AddChild(toolbarWindow);
             }
 
             PositionToolbar(desktop);
@@ -296,7 +287,7 @@ public class HabboToolbar : Component, IHabboToolbar
     /// Push one icon's visibility to the matching window region.
     private void ApplyIconVisibility(int iconId, bool visible)
     {
-        if (_toolbarWindow == null)
+        if (toolbarWindow == null)
         {
             return;
         }
@@ -308,7 +299,7 @@ public class HabboToolbar : Component, IHabboToolbar
             return;
         }
 
-        IWindow? region = _toolbarWindow.FindChildByName(iconName.ToUpperInvariant());
+        IWindow? region = toolbarWindow.FindChildByName(iconName.ToUpperInvariant());
 
         if (region != null)
         {
@@ -319,31 +310,31 @@ public class HabboToolbar : Component, IHabboToolbar
     /// @see com.sulake.habbo.toolbar.BottomBarLeft::checkSize
     private void CheckSize()
     {
-        if (_toolbarWindow == null)
+        if (toolbarWindow == null)
         {
             return;
         }
 
-        if (_toolbarWindow.FindChildByName("toolbar_items") is BoxSizerController toolbarItems)
+        if (toolbarWindow.FindChildByName("toolbar_items") is BoxSizerController toolbarItems)
         {
             toolbarItems.ArrangeChildren();
         }
 
-        _toolbarWindow.width = ICON_REGION_WIDTH * CalculateNewWidth() + WINDOW_RIGHT_PADDING + TOOLBAR_EXTENSION_MARGIN;
+        toolbarWindow.width = ICON_REGION_WIDTH * CalculateNewWidth() + WINDOW_RIGHT_PADDING + TOOLBAR_EXTENSION_MARGIN;
         PositionToolbar(_desktopWindow);
-        _toolbarWindow.Invalidate();
+        toolbarWindow.Invalidate();
     }
 
     /// @see com.sulake.habbo.toolbar.BottomBarLeft::calculateNewWidth
     private int CalculateNewWidth()
     {
-        if (_toolbarWindow == null)
+        if (toolbarWindow == null)
         {
             return 1;
         }
 
         List<IWindow> windows = new();
-        _toolbarWindow.GroupChildrenWithTag("TOGGLE", windows, -1);
+        toolbarWindow.GroupChildrenWithTag("TOGGLE", windows, -1);
 
         int count = 1;
 
@@ -361,15 +352,15 @@ public class HabboToolbar : Component, IHabboToolbar
     /// @see com.sulake.habbo.toolbar.BottomBarLeft::checkSize
     private void PositionToolbar(IDesktopWindow? desktop)
     {
-        if (_toolbarWindow == null || desktop == null)
+        if (toolbarWindow == null || desktop == null)
         {
             return;
         }
 
         Vector2 desktopSize = desktop.rectangle.Size;
 
-        _toolbarWindow.x = 0f;
-        _toolbarWindow.y = Math.Max(0f, desktopSize.Y - _toolbarWindow.height);
+        toolbarWindow.x = 0f;
+        toolbarWindow.y = Math.Max(0f, desktopSize.Y - toolbarWindow.height);
     }
 
     private void OnDesktopResized(WindowEvent ev, IWindow window)

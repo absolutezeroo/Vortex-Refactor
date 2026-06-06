@@ -11,6 +11,7 @@ Vortex ports the Habbo Hotel Flash/AS3 client to Godot 4.6 + C# (net9.0). The co
 1. `sources/WIN63-202407091256-704579380-Source-main/` — primary for all application logic
 2. `sources/WIN63-202111081545-75921380-Source-main/` — only for XML porting and: `HabboAirMain.as`, `Habbo.as`, `HabboLoadingScreen.as`, `IHabboLoadingScreen.as`
 3. `sources/PRODUCTION-201611291003-338511768-Source-main/` — deobfuscation fallback when newer dumps are missing or unclear
+4. `server/` — emulator of the project for the packets ids 
 
 If sources disagree, use highest-priority source. Lower-priority sources only clarify names/flow/data shape. Never merge contradictory logic.
 

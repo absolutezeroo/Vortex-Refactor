@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 
 using Vortex.Core.Runtime;
-using Vortex.Core.Runtime.Events;
 using Vortex.Habbo.Room.Object.Logic;
 using Vortex.Room;
 using Vortex.Room.Object.Logic;

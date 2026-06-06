@@ -4,9 +4,7 @@ using System;
 
 using Godot;
 
-using Vortex.Core.Communication.Messages;
 using Vortex.Core.Runtime;
-using Vortex.Core.Runtime.Events;
 using Vortex.Core.Window;
 using Vortex.Core.Window.Components;
 using Vortex.Core.Window.Events;
@@ -22,6 +20,9 @@ public class HabboToolbar : Component, IHabboToolbar
 {
     private IHabboCommunicationManager? _communication;
     private IHabboWindowManager? _windowManager;
+
+    /// @see HabboToolbar.as::get windowManager
+    public IHabboWindowManager? WindowManager => _windowManager;
 
     // TODO(as3-port): IHabboLocalizationManager — not ported yet
     // TODO(as3-port): IHabboCatalog — not ported yet
@@ -145,8 +146,12 @@ public class HabboToolbar : Component, IHabboToolbar
         _currentState = state;
         UpdateIconVisibilityForState(state);
 
+        // @see HabboToolbar.as::setToolbarState — forward full state to BottomBarLeft for tag-based visibility
+        _bottomBarLeft?.SetToolbarState(state);
+
         if (toolbarWindow != null)
         {
+            // @see HabboToolbar.as::setToolbarState — force visible except when explicitly hidden
             toolbarWindow.visible = state != HabboToolbarEnum.TOOLBAR_STATE_HIDDEN;
         }
 
@@ -196,6 +201,18 @@ public class HabboToolbar : Component, IHabboToolbar
     public void CreateTransitionToIcon(int iconId)
     {
         // TODO(as3-port): animate bounce transition on icon region
+    }
+
+    /// @see HabboToolbar.as::onCatalogEvent — forward catalog events to BottomBarLeft
+    public void OnCatalogEvent(string eventType)
+    {
+        _bottomBarLeft?.OnCatalogEvent(eventType);
+    }
+
+    /// @see HabboToolbar.as::onWiredMenuEvent — forward wired menu event to BottomBarLeft
+    public void OnWiredMenuEvent()
+    {
+        _bottomBarLeft?.OnWiredMenuEvent();
     }
 
     /// @see com.sulake.habbo.toolbar.HabboToolbar::getIconLocation
@@ -320,7 +337,7 @@ public class HabboToolbar : Component, IHabboToolbar
             toolbarItems.ArrangeChildren();
         }
 
-        toolbarWindow.width = ICON_REGION_WIDTH * CalculateNewWidth() + WINDOW_RIGHT_PADDING + TOOLBAR_EXTENSION_MARGIN;
+        toolbarWindow.width = (ICON_REGION_WIDTH * CalculateNewWidth()) + WINDOW_RIGHT_PADDING + TOOLBAR_EXTENSION_MARGIN;
         PositionToolbar(_desktopWindow);
         toolbarWindow.Invalidate();
     }

@@ -24,7 +24,7 @@ public class PlaneVisualizationLayer(PlaneMaterial? material, uint color, int al
 
     public bool Disposed { get; private set; }
 
-    bool Core.Runtime.IDisposable.disposed => Disposed;
+    bool IDisposable.disposed => Disposed;
 
     public void Dispose()
     {
@@ -180,13 +180,13 @@ public class PlaneVisualizationLayer(PlaneMaterial? material, uint color, int al
                     default:
                         {
                             Color dstColor = dest.GetPixel(dx, dy);
-                            float outA = srcColor.A + dstColor.A * (1f - srcColor.A);
+                            float outA = srcColor.A + (dstColor.A * (1f - srcColor.A));
 
                             if (outA > 0f)
                             {
-                                float cr = (srcColor.R * srcColor.A + dstColor.R * dstColor.A * (1f - srcColor.A)) / outA;
-                                float cg = (srcColor.G * srcColor.A + dstColor.G * dstColor.A * (1f - srcColor.A)) / outA;
-                                float cb = (srcColor.B * srcColor.A + dstColor.B * dstColor.A * (1f - srcColor.A)) / outA;
+                                float cr = ((srcColor.R * srcColor.A) + (dstColor.R * dstColor.A * (1f - srcColor.A))) / outA;
+                                float cg = ((srcColor.G * srcColor.A) + (dstColor.G * dstColor.A * (1f - srcColor.A))) / outA;
+                                float cb = ((srcColor.B * srcColor.A) + (dstColor.B * dstColor.A * (1f - srcColor.A))) / outA;
 
                                 dest.SetPixel(dx, dy, new Color(cr, cg, cb, outA));
                             }

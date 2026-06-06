@@ -56,7 +56,7 @@ public class PlaneVisualizationAnimationLayer : IDisposable
 
     public bool Disposed { get; private set; }
 
-    bool Core.Runtime.IDisposable.disposed => Disposed;
+    bool IDisposable.disposed => Disposed;
 
     public void Dispose()
     {
@@ -191,13 +191,13 @@ public class PlaneVisualizationAnimationLayer : IDisposable
                     default:
                         {
                             Color dstColor = dest.GetPixel(dx, dy);
-                            float outA = srcColor.A + dstColor.A * (1f - srcColor.A);
+                            float outA = srcColor.A + (dstColor.A * (1f - srcColor.A));
 
                             if (outA > 0f)
                             {
-                                float r = (srcColor.R * srcColor.A + dstColor.R * dstColor.A * (1f - srcColor.A)) / outA;
-                                float g = (srcColor.G * srcColor.A + dstColor.G * dstColor.A * (1f - srcColor.A)) / outA;
-                                float b = (srcColor.B * srcColor.A + dstColor.B * dstColor.A * (1f - srcColor.A)) / outA;
+                                float r = ((srcColor.R * srcColor.A) + (dstColor.R * dstColor.A * (1f - srcColor.A))) / outA;
+                                float g = ((srcColor.G * srcColor.A) + (dstColor.G * dstColor.A * (1f - srcColor.A))) / outA;
+                                float b = ((srcColor.B * srcColor.A) + (dstColor.B * dstColor.A * (1f - srcColor.A))) / outA;
 
                                 dest.SetPixel(dx, dy, new Color(r, g, b, outA));
                             }

@@ -13,8 +13,6 @@ using Vortex.Core.Window.Iterators;
 using Vortex.Core.Window.Utils;
 using Vortex.Habbo.Avatar;
 
-using IDisposable = Vortex.Core.Runtime.IDisposable;
-
 namespace Vortex.Habbo.Window.Widgets;
 
 /// @see habbo/window/widgets/AvatarImageWidget.as
@@ -247,7 +245,7 @@ public class AvatarImageWidget : IAvatarImageWidget, IAvatarImageListener
         {
             if (disposed)
             {
-                return System.Array.Empty<PropertyStruct>();
+                return Array.Empty<PropertyStruct>();
             }
 
             return
@@ -278,7 +276,7 @@ public class AvatarImageWidget : IAvatarImageWidget, IAvatarImageListener
                         Cropped = prop.value is true;
                         break;
                     case DIRECTION_KEY:
-                        Direction = System.Array.IndexOf(DIRECTIONS, prop.value as string);
+                        Direction = Array.IndexOf(DIRECTIONS, prop.value as string);
                         break;
                 }
             }
@@ -377,7 +375,7 @@ public class AvatarImageWidget : IAvatarImageWidget, IAvatarImageListener
             for (int x = 0; x < width; x++)
             {
                 Color pixel = image.GetPixel(x, y);
-                float luminance = (float)(RC * pixel.R + GC * pixel.G + BC * pixel.B);
+                float luminance = (float)((RC * pixel.R) + (GC * pixel.G) + (BC * pixel.B));
                 image.SetPixel(x, y, new Color(luminance, luminance, luminance, pixel.A));
             }
         }

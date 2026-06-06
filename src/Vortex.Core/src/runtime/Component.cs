@@ -94,8 +94,9 @@ public class Component : IUnknown, ICoreConfiguration, IDisposable
 
 		if (locked && _requiredDependencyIIDs.Count > 0)
 		{
-			Logger.Warn(
-				$"[Component] {GetType().Name} has {_requiredDependencyIIDs.Count} unresolved required deps: {string.Join(", ", _requiredDependencyIIDs)}"
+			// @see Component.as — required deps resolve asynchronously; this is expected during bootstrap
+			Logger.Debug(
+				$"[Component] {GetType().Name} waiting for {_requiredDependencyIIDs.Count} required dep(s): {string.Join(", ", _requiredDependencyIIDs)}"
 			);
 		}
 	}
@@ -206,6 +207,9 @@ public class Component : IUnknown, ICoreConfiguration, IDisposable
 		if (!string.IsNullOrEmpty(param1))
 		{
 			_requiredDependencyIIDs.Remove(param1);
+			Logger.Debug(
+				$"[Component] {GetType().Name} dep resolved: {param1} ({_requiredDependenciesCount} remaining)"
+			);
 		}
 
 		if (_requiredDependenciesCount != 0)
@@ -213,6 +217,7 @@ public class Component : IUnknown, ICoreConfiguration, IDisposable
 			return;
 		}
 
+		Logger.Debug($"[Component] {GetType().Name} all deps resolved — unlocking");
 		InitComponent();
 		Unlock();
 	}

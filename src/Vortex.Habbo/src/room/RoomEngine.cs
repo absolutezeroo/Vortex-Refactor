@@ -2525,8 +2525,8 @@ public class RoomEngine : Component,
 
         if (canvas != null)
         {
-            left += canvas.Width / 2 + canvas.ScreenOffsetX;
-            top += canvas.Height / 2 + canvas.ScreenOffsetY;
+            left += (canvas.Width / 2) + canvas.ScreenOffsetX;
+            top += (canvas.Height / 2) + canvas.ScreenOffsetY;
             return new Rect2(left, top, width, height);
         }
 
@@ -2568,8 +2568,8 @@ public class RoomEngine : Component,
         {
             float x = (float)(point.Value.X * canvas.Scale);
             float y = (float)(point.Value.Y * canvas.Scale);
-            x += canvas.Width / 2 + canvas.ScreenOffsetX;
-            y += canvas.Height / 2 + canvas.ScreenOffsetY;
+            x += (canvas.Width / 2) + canvas.ScreenOffsetX;
+            y += (canvas.Height / 2) + canvas.ScreenOffsetY;
             return new Vector2(x, y);
         }
 

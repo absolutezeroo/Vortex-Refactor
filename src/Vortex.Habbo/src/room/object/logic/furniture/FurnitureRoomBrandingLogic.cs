@@ -2,9 +2,9 @@ namespace Vortex.Habbo.Room.Object.Logic;
 
 using System;
 
-using Vortex.Habbo.Room.Events;
-using Vortex.Habbo.Room.Messages;
-using Vortex.Habbo.Room.Object.Data;
+using Events;
+using Messages;
+using Data;
 using Vortex.Room.Events;
 using Vortex.Room.Messages;
 using Vortex.Room.Object;

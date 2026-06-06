@@ -15,7 +15,6 @@ using Vortex.Habbo.Communication.Messages.Incoming.Preferences;
 using Vortex.Habbo.Communication.Messages.Incoming.Room.Engine;
 using Vortex.Habbo.Communication.Messages.Incoming.Users;
 using Vortex.Habbo.Configuration;
-using Vortex.Habbo.Session.Events;
 using Vortex.Habbo.Session.Furniture;
 using Vortex.Habbo.Session.Product;
 using Vortex.IID;

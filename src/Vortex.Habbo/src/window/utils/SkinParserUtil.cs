@@ -87,6 +87,9 @@ public static class SkinParserUtil
                 style = 0;
             }
 
+            float blend = ParseFloatAttr(windowEl, "blend", 1.0f);
+            uint color = ParseUintAttr(windowEl, "color", 0xFFFFFF);
+
             // Create renderer from factory
             if (!rendererFactories.TryGetValue(rendererType, out Func<string?, ISkinRenderer>? factory))
             {
@@ -105,13 +108,18 @@ public static class SkinParserUtil
 
             renderer.Parse(skinAsset?.Content as XElement, inlineStates, imageResolver);
 
+            if (skinAsset == null)
+            {
+                GD.PrintErr($"[SkinParserUtil] template MISS type='{typeName}' renderer='{rendererType}' asset='{assetName}'");
+            }
+
             // Build DefaultAttStruct
             DefaultAttStruct defaults = new()
             {
                 Threshold = ParseUintAttr(windowEl, "treshold", 10),
                 Background = windowEl.Attribute("background")?.Value == "true",
-                Blend = ParseFloatAttr(windowEl, "blend", 1.0f),
-                Color = ParseUintAttr(windowEl, "color", 0xFFFFFF),
+                Blend = blend,
+                Color = color,
                 WidthMin = ParseIntAttr(windowEl, "width_min", int.MinValue),
                 WidthMax = ParseIntAttr(windowEl, "width_max", int.MaxValue),
                 HeightMin = ParseIntAttr(windowEl, "height_min", int.MinValue),

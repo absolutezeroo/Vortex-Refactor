@@ -1048,7 +1048,7 @@ public class HabboWindowManagerComponent : Component, IHabboWindowManager, IInpu
 
         // @see HabboWindowManagerComponent.as — AS3 loads CSS from asset library too
         string? cssText = null;
-        if (_assets is Core.Assets.IAssetLibrary cssLib)
+        if (_assets is IAssetLibrary cssLib)
         {
             IAsset? cssAsset = cssLib.GetAssetByName("text_styles_css");
             if (cssAsset?.Content is string cssContent)
@@ -1361,12 +1361,12 @@ public class HabboWindowManagerComponent : Component, IHabboWindowManager, IInpu
     private XElement? GetAlertXml(string assetName)
     {
         object? asset = FindAssetByName(assetName);
-        if (asset is Core.Assets.IAsset { Content: XElement xmlContent })
+        if (asset is IAsset { Content: XElement xmlContent })
         {
             return xmlContent;
         }
 
-        if (_assets is Core.Assets.IAssetLibrary assetLib)
+        if (_assets is IAssetLibrary assetLib)
         {
             IAsset? libAsset = assetLib.GetAssetByName(assetName);
             if (libAsset?.Content is XElement libXml)

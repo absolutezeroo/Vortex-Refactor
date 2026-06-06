@@ -685,8 +685,8 @@ public class RoomPlane : IRoomPlane
 				continue;
 			}
 
-			int posX = (int)(_maskBitmapData.GetWidth() * (1.0 - bitmapMask.LeftSideLoc / _leftSide!.Length));
-			int posY = (int)(_maskBitmapData.GetHeight() * (1.0 - bitmapMask.RightSideLoc / _rightSide!.Length));
+			int posX = (int)(_maskBitmapData.GetWidth() * (1.0 - (bitmapMask.LeftSideLoc / _leftSide!.Length)));
+			int posY = (int)(_maskBitmapData.GetHeight() * (1.0 - (bitmapMask.RightSideLoc / _rightSide!.Length)));
 
 			drawingData.AddMask(assetName, new Vector2I(posX + asset.OffsetX, posY + asset.OffsetY),
 				asset.FlipH, asset.FlipV);
@@ -911,7 +911,7 @@ public class RoomPlane : IRoomPlane
 		}
 
 		// General affine transform
-		double det = a * d - b * c;
+		double det = (a * d) - (b * c);
 
 		if (Math.Abs(det) < 0.0001)
 		{
@@ -931,8 +931,8 @@ public class RoomPlane : IRoomPlane
 				double localX = dx3 - tx;
 				double localY = dy3 - ty;
 
-				double srcX = localX * invA + localY * invC;
-				double srcY = localX * invB + localY * invD;
+				double srcX = (localX * invA) + (localY * invC);
+				double srcY = (localX * invB) + (localY * invD);
 
 				int sx = (int)srcX;
 				int sy = (int)srcY;
@@ -1035,8 +1035,8 @@ public class RoomPlane : IRoomPlane
 			{
 				foreach (RoomPlaneBitmapMask bitmapMask in _bitmapMasks)
 				{
-					int posX = (int)(tw - tw * bitmapMask.LeftSideLoc / _leftSide!.Length);
-					int posY = (int)(th - th * bitmapMask.RightSideLoc / _rightSide!.Length);
+					int posX = (int)(tw - (tw * bitmapMask.LeftSideLoc / _leftSide!.Length));
+					int posY = (int)(th - (th * bitmapMask.RightSideLoc / _rightSide!.Length));
 
 					_maskManager.UpdateMask(_maskBitmapData, bitmapMask.Type, geometry.Scale, coordPos, posX, posY);
 					_previousBitmapMasks.Add(new RoomPlaneBitmapMask(bitmapMask.Type, bitmapMask.LeftSideLoc, bitmapMask.RightSideLoc));
@@ -1045,8 +1045,8 @@ public class RoomPlane : IRoomPlane
 
 			foreach (RoomPlaneRectangleMask rectMask in _rectangleMasks)
 			{
-				int posX = (int)(tw - tw * rectMask.LeftSideLoc / _leftSide!.Length);
-				int posY = (int)(th - th * rectMask.RightSideLoc / _rightSide!.Length);
+				int posX = (int)(tw - (tw * rectMask.LeftSideLoc / _leftSide!.Length));
+				int posY = (int)(th - (th * rectMask.RightSideLoc / _rightSide!.Length));
 				int rectW = (int)(tw * rectMask.LeftSideLength / _leftSide.Length);
 				int rectH = (int)(th * rectMask.RightSideLength / _rightSide!.Length);
 

@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
-using Vortex.Core.Communication.Connection;
 using Vortex.Core.Runtime.Events;
 using Vortex.Room;
 using Vortex.Room.Events;
@@ -12,7 +10,6 @@ using Vortex.Room.Utils;
 using Vortex.Habbo.Communication.Messages.Outgoing.Room.Engine;
 using Vortex.Habbo.Room.Events;
 using Vortex.Habbo.Room.Messages;
-using Vortex.Habbo.Room.Object;
 using Vortex.Habbo.Room.Utils;
 
 namespace Vortex.Habbo.Room;
@@ -692,8 +689,8 @@ public class RoomObjectEventHandler : IRoomRenderingCanvasMouseListener, IDispos
         }
 
         IVector3d loc = obj.Location;
-        int tileX = (int)(loc.X + mouseEvent.LocalX / 64.0);
-        int tileY = (int)(loc.Y + mouseEvent.LocalY / 64.0);
+        int tileX = (int)(loc.X + (mouseEvent.LocalX / 64.0));
+        int tileY = (int)(loc.Y + (mouseEvent.LocalY / 64.0));
 
         if (tileX < loc.X || tileX >= loc.X + sizeX ||
             tileY < loc.Y || tileY >= loc.Y + sizeY)
@@ -1119,9 +1116,9 @@ public class RoomObjectEventHandler : IRoomRenderingCanvasMouseListener, IDispos
         double centerZ = obj.Model.GetNumber("furniture_center_z");
 
         double wallLen = Math.Sqrt(
-            wallWidth.X * wallWidth.X + wallWidth.Y * wallWidth.Y + wallWidth.Z * wallWidth.Z);
+            (wallWidth.X * wallWidth.X) + (wallWidth.Y * wallWidth.Y) + (wallWidth.Z * wallWidth.Z));
         double wallHLen = Math.Sqrt(
-            wallHeight.X * wallHeight.X + wallHeight.Y * wallHeight.Y + wallHeight.Z * wallHeight.Z);
+            (wallHeight.X * wallHeight.X) + (wallHeight.Y * wallHeight.Y) + (wallHeight.Z * wallHeight.Z));
 
         if (wallLen == 0 || wallHLen == 0)
         {
@@ -1129,13 +1126,13 @@ public class RoomObjectEventHandler : IRoomRenderingCanvasMouseListener, IDispos
         }
 
         // Clamp to wall bounds
-        double clampedX = Math.Max(sizeX / 2.0, Math.Min(x, wallLen - sizeX / 2.0));
+        double clampedX = Math.Max(sizeX / 2.0, Math.Min(x, wallLen - (sizeX / 2.0)));
         double clampedY = Math.Max(centerZ, Math.Min(y, wallHLen - (sizeZ - centerZ)));
 
         return new Vector3d(
-            wallLocation.X + wallWidth.X * clampedX / wallLen + wallHeight.X * clampedY / wallHLen,
-            wallLocation.Y + wallWidth.Y * clampedX / wallLen + wallHeight.Y * clampedY / wallHLen,
-            wallLocation.Z + wallWidth.Z * clampedX / wallLen + wallHeight.Z * clampedY / wallHLen);
+            wallLocation.X + (wallWidth.X * clampedX / wallLen) + (wallHeight.X * clampedY / wallHLen),
+            wallLocation.Y + (wallWidth.Y * clampedX / wallLen) + (wallHeight.Y * clampedY / wallHLen),
+            wallLocation.Z + (wallWidth.Z * clampedX / wallLen) + (wallHeight.Z * clampedY / wallHLen));
     }
 
     /// @see com.sulake.habbo.room.RoomObjectEventHandler::getValidRoomObjectDirection

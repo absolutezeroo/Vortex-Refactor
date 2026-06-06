@@ -40,14 +40,14 @@ public class FurniStackingHeightMap
 
     public double GetTileHeight(int x, int y)
     {
-        return ValidPosition(x, y) ? _heights![y * Width + x] : 0;
+        return ValidPosition(x, y) ? _heights![(y * Width) + x] : 0;
     }
 
     public void SetTileHeight(int x, int y, double height)
     {
         if (ValidPosition(x, y))
         {
-            _heights![y * Width + x] = height;
+            _heights![(y * Width) + x] = height;
         }
     }
 
@@ -55,7 +55,7 @@ public class FurniStackingHeightMap
     {
         if (ValidPosition(x, y))
         {
-            _stackingBlocked![y * Width + x] = blocked;
+            _stackingBlocked![(y * Width) + x] = blocked;
         }
     }
 
@@ -63,7 +63,7 @@ public class FurniStackingHeightMap
     {
         if (ValidPosition(x, y))
         {
-            _roomTiles![y * Width + x] = isRoom;
+            _roomTiles![(y * Width) + x] = isRoom;
         }
     }
 
@@ -107,7 +107,7 @@ public class FurniStackingHeightMap
                     continue;
                 }
 
-                int index = tileY * Width + tileX;
+                int index = (tileY * Width) + tileX;
 
                 if (onlyRoomTiles)
                 {

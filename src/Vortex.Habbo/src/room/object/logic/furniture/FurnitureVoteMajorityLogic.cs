@@ -1,7 +1,7 @@
 namespace Vortex.Habbo.Room.Object.Logic;
 
-using Vortex.Habbo.Room.Messages;
-using Vortex.Habbo.Room.Object.Data;
+using Messages;
+using Data;
 using Vortex.Room.Messages;
 
 /// @see com.sulake.habbo.room.object.logic.furniture.FurnitureVoteMajorityLogic (class_3465)

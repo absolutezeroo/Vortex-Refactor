@@ -1,12 +1,8 @@
 namespace Vortex.Habbo.Room.Object.Logic;
 
-using System;
-
-using Vortex.Habbo.Room.Events;
-using Vortex.Habbo.Room.Messages;
+using Events;
+using Messages;
 using Vortex.Room.Messages;
-using Vortex.Room.Object;
-using Vortex.Room.Utils;
 
 /// @see com.sulake.habbo.room.object.logic.furniture.FurnitureChangeStateWhenStepOnLogic (class_3497)
 public class FurnitureChangeStateWhenStepOnLogic : FurnitureLogic

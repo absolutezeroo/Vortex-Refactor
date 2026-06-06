@@ -1,5 +1,3 @@
-using System;
-
 using Vortex.Room.Utils;
 
 namespace Vortex.Habbo.Room.Object.Visualization.Room.Rasterizer.Basic;

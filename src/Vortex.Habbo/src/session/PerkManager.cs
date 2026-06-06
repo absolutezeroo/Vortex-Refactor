@@ -1,6 +1,5 @@
 // @see com.sulake.habbo.session.PerkManager
 
-using Vortex.Core.Communication.Messages;
 using Vortex.Core.Runtime;
 using Vortex.Habbo.Session.Events;
 

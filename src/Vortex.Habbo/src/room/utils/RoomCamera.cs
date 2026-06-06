@@ -164,7 +164,7 @@ public class RoomCamera
             double sinValue = Math.Sin(Math.PI * diff.Length / _totalDistance);
             double halfSpeed = moveSpeed * 0.5;
             double maxSpeed = _totalDistance / MOVE_SPEED_DENOMINATOR;
-            double speed = halfSpeed + (maxSpeed - halfSpeed) * sinValue;
+            double speed = halfSpeed + ((maxSpeed - halfSpeed) * sinValue);
 
             if (_isStarting)
             {

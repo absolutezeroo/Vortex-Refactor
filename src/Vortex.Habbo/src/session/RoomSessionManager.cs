@@ -188,7 +188,7 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
 
         session.connection = _communication?.connection;
         _sessions[key] = session;
-        base.events?.DispatchEvent(new RoomSessionEvent("RSE_CREATED", session));
+        events?.DispatchEvent(new RoomSessionEvent("RSE_CREATED", session));
         if (_useVisualizationSettings)
         {
             // TODO(as3-port): room engine content type tracking not yet ported
@@ -218,7 +218,7 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
         if (session.Start())
         {
             _sessionStarting = false;
-            base.events?.DispatchEvent(new RoomSessionEvent("RSE_STARTED", session));
+            events?.DispatchEvent(new RoomSessionEvent("RSE_STARTED", session));
             UpdateHandlers(session);
         }
         else
@@ -240,7 +240,7 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
         };
         session.connection = _communication?.connection;
         _sessions[GetRoomIdentifier(1)] = session;
-        base.events?.DispatchEvent(new RoomSessionEvent("RSE_CREATED", session));
+        events?.DispatchEvent(new RoomSessionEvent("RSE_CREATED", session));
     }
 
     /// @see RoomSessionManager.as::disposeGameSession
@@ -305,7 +305,7 @@ public class RoomSessionManager : Component, IRoomSessionManager, IRoomHandlerLi
             return;
         }
 
-        base.events?.DispatchEvent(new RoomSessionEvent("RSE_ENDED", session, sendDisconnect));
+        events?.DispatchEvent(new RoomSessionEvent("RSE_ENDED", session, sendDisconnect));
         session.Dispose();
     }
 

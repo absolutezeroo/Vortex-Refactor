@@ -58,7 +58,7 @@ public class IlluminaBorderWidget : IIlluminaBorderWidget, IWidget
     private bool _landingViewMode;
 
     // @see IlluminaBorderWidget.as — cached border piece assets keyed by piece name
-    private readonly System.Collections.Generic.Dictionary<string, BitmapDataAsset?> _borderAssets = new();
+    private readonly Dictionary<string, BitmapDataAsset?> _borderAssets = new();
 
     /// @see habbo/window/widgets/IlluminaBorderWidget.as::IlluminaBorderWidget
     public IlluminaBorderWidget(IWidgetWindow widgetWindow, HabboWindowManagerComponent windowManager)
@@ -459,7 +459,7 @@ public class IlluminaBorderWidget : IIlluminaBorderWidget, IWidget
                 continue;
             }
 
-            int cornerIndex = System.Array.IndexOf(cornerChildNames, child.name);
+            int cornerIndex = Array.IndexOf(cornerChildNames, child.name);
             if (cornerIndex < 0)
             {
                 // @see IlluminaBorderWidget.as — content child or hidden

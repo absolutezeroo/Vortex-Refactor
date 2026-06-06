@@ -1,7 +1,5 @@
 // @see core/window/services/IMouseScalingService.as
 
-using Vortex.Core.Window.Components;
-
 namespace Vortex.Core.Window.Services;
 
 /// @see core/window/services/IMouseScalingService.as

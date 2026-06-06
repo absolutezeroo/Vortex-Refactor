@@ -496,11 +496,11 @@ public class ItemListController : WindowController, IScrollableWindow, IItemList
 
 				if (_horizontal && MaxScrollHValue > 0)
 				{
-					SetScrollH(_dragStartScrollH - deltaX / MaxScrollHValue);
+					SetScrollH(_dragStartScrollH - (deltaX / MaxScrollHValue));
 				}
 				else if (!_horizontal && MaxScrollVValue > 0)
 				{
-					SetScrollV(_dragStartScrollV - deltaY / MaxScrollVValue);
+					SetScrollV(_dragStartScrollV - (deltaY / MaxScrollVValue));
 				}
 
 				break;

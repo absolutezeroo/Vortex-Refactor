@@ -50,8 +50,8 @@ public class FurniturePlanetSystemVisualizationPlanetObject(string name,
         double halfScale = scale / 2.0;
 
         _position.X = (cosVal - sinVal) * halfScale;
-        _position.Y = (sinVal + cosVal) * halfScale * 0.5 - height * halfScale;
-        _position.Z = -(int)(4 * (cosVal + sinVal) - 0.7);
+        _position.Y = ((sinVal + cosVal) * halfScale * 0.5) - (height * halfScale);
+        _position.Z = -(int)((4 * (cosVal + sinVal)) - 0.7);
 
         if (parent != null)
         {

@@ -1,7 +1,6 @@
 // @see com.sulake.habbo.session.UserDataManager
 
 using Vortex.Core.Communication.Connection;
-using Vortex.Core.Communication.Messages;
 
 namespace Vortex.Habbo.Session;
 

@@ -35,6 +35,8 @@ public class HabboLandingView : Component, IHabboLandingView
 
     public IHabboWindowManager WindowManager => _windowManager!;
 
+    internal IHabboCommunicationManager? CommunicationManager => _communicationManager;
+
     /// @see HabboLandingView.as::dependencies
     protected override IList<ComponentDependency> dependencies =>
         base.dependencies.Concat(

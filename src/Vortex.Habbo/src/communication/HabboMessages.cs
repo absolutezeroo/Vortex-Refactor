@@ -3,6 +3,7 @@ using System;
 using Vortex.Core.Communication.Messages;
 using Vortex.Habbo.Communication.Messages.Incoming.Availability;
 using Vortex.Habbo.Communication.Messages.Incoming.Avatar;
+using Vortex.Habbo.Communication.Messages.Incoming.Competition;
 using Vortex.Habbo.Communication.Messages.Incoming.Error;
 using Vortex.Habbo.Communication.Messages.Incoming.Handshake;
 using Vortex.Habbo.Communication.Messages.Incoming.Help;
@@ -21,6 +22,7 @@ using Vortex.Habbo.Communication.Messages.Incoming.Room.Quiz;
 using Vortex.Habbo.Communication.Messages.Incoming.Room.Session;
 using Vortex.Habbo.Communication.Messages.Incoming.Users;
 using Vortex.Habbo.Communication.Messages.Outgoing.Handshake;
+using Vortex.Habbo.Communication.Messages.Outgoing.Competition;
 using Vortex.Habbo.Communication.Messages.Outgoing.Room.Action;
 using Vortex.Habbo.Communication.Messages.Outgoing.Room.Chat;
 using Vortex.Habbo.Communication.Messages.Outgoing.Room.Engine;
@@ -183,6 +185,9 @@ public class HabboMessages : IMessageConfiguration
         // --- Navigator ---
         events[3969] = typeof(NavigatorSettingsEvent);
 
+        // --- Competition ---
+        events[1179] = typeof(CurrentTimingCodeMessageEvent);
+
         // --- Room Poll ---
         events[1808] = typeof(PollContentsEvent);
         events[2078] = typeof(PollOfferEvent);
@@ -301,6 +306,9 @@ public class HabboMessages : IMessageConfiguration
         // --- Room Layout Composers ---
         composers[3831] = typeof(GetOccupiedTilesMessageComposer);
         composers[1149] = typeof(GetRoomEntryTileMessageComposer);
+
+        // --- Competition Composers ---
+        composers[1332] = typeof(GetCurrentTimingCodeMessageComposer);
     }
 
     public Dictionary<int, Type> events { get; } = new();

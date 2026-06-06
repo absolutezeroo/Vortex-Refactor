@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 using Vortex.Core.Assets.Loaders;
-using Vortex.Core.Logging;
 using Vortex.Core.Runtime.Events;
 
 namespace Vortex.Habbo.Session.Product;

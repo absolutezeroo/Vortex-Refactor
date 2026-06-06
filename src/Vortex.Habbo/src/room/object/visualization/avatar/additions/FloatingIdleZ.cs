@@ -140,7 +140,7 @@ public class FloatingIdleZ : IAvatarAddition
         }
         else if (_visualization.Posture == "lay")
         {
-            _offsetY += (int)(baseSize - 0.3 * baseSize);
+            _offsetY += (int)(baseSize - (0.3 * baseSize));
         }
 
         if (_asset != null)

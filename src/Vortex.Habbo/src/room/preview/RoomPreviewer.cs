@@ -633,7 +633,7 @@ public class RoomPreviewer
                 Vector2 end = rect.End;
                 _currentPreviewRectangle = new Rect2(
                     new Vector2(pos.X / 4, pos.Y / 4),
-                    new Vector2(end.X / 4 - pos.X / 4, end.Y / 4 - pos.Y / 4));
+                    new Vector2((end.X / 4) - (pos.X / 4), (end.Y / 4) - (pos.Y / 4)));
             }
             else if (geometry != null && geometry.IsZoomedIn())
             {
@@ -646,11 +646,11 @@ public class RoomPreviewer
                 Vector2 end = rect.End;
                 _currentPreviewRectangle = new Rect2(
                     new Vector2(pos.X / 4, pos.Y / 4),
-                    new Vector2(end.X / 4 - pos.X / 4, end.Y / 4 - pos.Y / 4));
+                    new Vector2((end.X / 4) - (pos.X / 4), (end.Y / 4) - (pos.Y / 4)));
             }
         }
-        else if (rect.Size.X * 2 < _currentPreviewCanvasWidth * (1 + ALLOWED_IMAGE_CUT) - 5
-                 && rect.Size.Y * 2 < _currentPreviewCanvasHeight * (1 + ALLOWED_IMAGE_CUT) - 5)
+        else if (rect.Size.X * 2 < (_currentPreviewCanvasWidth * (1 + ALLOWED_IMAGE_CUT)) - 5
+                 && rect.Size.Y * 2 < (_currentPreviewCanvasHeight * (1 + ALLOWED_IMAGE_CUT)) - 5)
         {
             // Object small enough — zoom in
             if ((_roomEngine as Component)!.GetBoolean("zoom.enabled"))
@@ -719,15 +719,15 @@ public class RoomPreviewer
             return null;
         }
 
-        double distance = Math.Sqrt(diffX * diffX + diffY * diffY);
+        double distance = Math.Sqrt((diffX * diffX) + (diffY * diffY));
 
         if (!(distance > 10))
         {
             return new Vector2((float)targetX, (float)targetY);
         }
 
-        targetX = offset.X + diffX * 10 / distance;
-        targetY = offset.Y + diffY * 10 / distance;
+        targetX = offset.X + (diffX * 10 / distance);
+        targetY = offset.Y + (diffY * 10 / distance);
 
         return new Vector2((float)targetX, (float)targetY);
 
@@ -784,7 +784,7 @@ public class RoomPreviewer
         {
             _roomEngine.UpdateObjectWallItemLocation(
                 objectEvent.RoomId, objectEvent.ObjectId,
-                new Vector3d(0.5, 2.3, (3.6 - sizeZ) / 2 + centerZ));
+                new Vector3d(0.5, 2.3, ((3.6 - sizeZ) / 2) + centerZ));
         }
     }
 

@@ -287,9 +287,9 @@ public class PlaneRasterizer : IPlaneRasterizer
 
                 if (!string.IsNullOrEmpty(colorStr))
                 {
-                    if (colorStr.StartsWith("0x", System.StringComparison.OrdinalIgnoreCase))
+                    if (colorStr.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
                     {
-                        color = uint.Parse(colorStr.AsSpan(2), System.Globalization.NumberStyles.HexNumber);
+                        color = uint.Parse(colorStr.AsSpan(2), NumberStyles.HexNumber);
                     }
                     else
                     {

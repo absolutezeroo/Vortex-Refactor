@@ -13,7 +13,6 @@ using Vortex.Habbo.Room;
 using Vortex.Habbo.Room.Object;
 using Vortex.Habbo.Room.Object.Visualization.Room;
 using Vortex.Room.Object;
-using Vortex.Room.Object.Visualization;
 using Vortex.Room.Object.Visualization.Utils;
 using Vortex.Room.Utils;
 

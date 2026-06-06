@@ -1,8 +1,8 @@
 namespace Vortex.Habbo.Room.Object.Logic;
 
-using Vortex.Habbo.Room.Events;
-using Vortex.Habbo.Room.Messages;
-using Vortex.Habbo.Room.Object.Data;
+using Events;
+using Messages;
+using Data;
 using Vortex.Room.Messages;
 
 /// @see com.sulake.habbo.room.object.logic.furniture.FurnitureMannequinLogic

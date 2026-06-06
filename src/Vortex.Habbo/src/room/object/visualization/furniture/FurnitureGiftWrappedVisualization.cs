@@ -1,5 +1,3 @@
-using System;
-
 using Vortex.Room.Object;
 using Vortex.Room.Utils;
 

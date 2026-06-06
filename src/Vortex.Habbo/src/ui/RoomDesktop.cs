@@ -226,7 +226,7 @@ public sealed class RoomDesktop : IRoomDesktop, IDisposable
         local13 += local8 - 1;
         local10 += local8 - 1;
 
-        double local11 = Math.Sqrt(local8 * local8 + local8 * local8) * Math.Tan(Math.PI / 6);
+        double local11 = Math.Sqrt((local8 * local8) + (local8 * local8)) * Math.Tan(Math.PI / 6);
 
         geometry.Location = new Vector3d(local13, local10, local11);
     }

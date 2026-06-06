@@ -70,7 +70,7 @@ public class FurnitureBuilderPlaceholderVisualization : FurnitureVisualization
         int gridY = gridIndex % _sizeY;
         int gridX = gridIndex / _sizeY;
 
-        return offset + (gridY - gridX) * scale / 2;
+        return offset + ((gridY - gridX) * scale / 2);
     }
 
     protected override int GetSpriteYOffset(int scale, int direction, int layer)
@@ -82,7 +82,7 @@ public class FurnitureBuilderPlaceholderVisualization : FurnitureVisualization
         int gridY = gridIndex % _sizeY;
         int gridX = gridIndex / _sizeY;
 
-        return offset + (gridY + gridX) * scale / 4;
+        return offset + ((gridY + gridX) * scale / 4);
     }
 
     protected override bool GetSpriteMouseCapture(int scale, int direction, int layer)

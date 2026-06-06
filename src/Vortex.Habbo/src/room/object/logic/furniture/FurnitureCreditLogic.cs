@@ -2,7 +2,7 @@ namespace Vortex.Habbo.Room.Object.Logic;
 
 using System.Xml.Linq;
 
-using Vortex.Habbo.Room.Events;
+using Events;
 
 /// @see com.sulake.habbo.room.object.logic.furniture.FurnitureCreditLogic
 public class FurnitureCreditLogic : FurnitureLogic

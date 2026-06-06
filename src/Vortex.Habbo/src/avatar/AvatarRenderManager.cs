@@ -637,12 +637,12 @@ public class AvatarRenderManager : Component, IAvatarRenderManager
             {
                 if (path.StartsWith("res://", StringComparison.Ordinal))
                 {
-                    if (!Godot.FileAccess.FileExists(path))
+                    if (!FileAccess.FileExists(path))
                     {
                         continue;
                     }
 
-                    using FileAccess? file = Godot.FileAccess.Open(path, Godot.FileAccess.ModeFlags.Read);
+                    using FileAccess? file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
 
                     if (file != null)
                     {

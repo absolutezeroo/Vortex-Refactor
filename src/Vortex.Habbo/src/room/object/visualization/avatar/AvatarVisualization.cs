@@ -52,7 +52,7 @@ public class AvatarVisualization : RoomObjectSpriteVisualization, IAvatarImageLi
     private int _remainingFrameUpdates;
     private BitmapDataAsset? _shadowAsset;
     private bool _forceUpdate;
-    private int _cacheCleanupCounter = (int)(Random.Shared.NextDouble() * 200 + 200);
+    private int _cacheCleanupCounter = (int)((Random.Shared.NextDouble() * 200) + 200);
     private int _modelHeadDirection = -1;
     private int _computedHeadAngle = -1;
     private int _firstAdditionSpriteIndex = INITIAL_RESERVED_SPRITES;
@@ -296,8 +296,8 @@ public class AvatarVisualization : RoomObjectSpriteVisualization, IAvatarImageLi
 
                 if (mainSprite.Asset != null)
                 {
-                    mainSprite.OffsetX = (int)(-1 * scale / 2 + canvasOffsets[0] - (mainSprite.Asset.GetWidth() - scale) / 2);
-                    mainSprite.OffsetY = (int)(-mainSprite.Asset.GetHeight() + scale / 4 + canvasOffsets[1] + _geometryOffset);
+                    mainSprite.OffsetX = (int)((-1 * scale / 2) + canvasOffsets[0] - ((mainSprite.Asset.GetWidth() - scale) / 2));
+                    mainSprite.OffsetY = (int)(-mainSprite.Asset.GetHeight() + (scale / 4) + canvasOffsets[1] + _geometryOffset);
 
                     if (Posture == "swdieback" || Posture == "swdiefront")
                     {
@@ -451,7 +451,7 @@ public class AvatarVisualization : RoomObjectSpriteVisualization, IAvatarImageLi
                         int offsetX = halfResolution ? (int)(asset.Offset.X / 2) : (int)asset.Offset.X;
                         int offsetY = halfResolution ? (int)(asset.Offset.Y / 2) : (int)asset.Offset.Y;
 
-                        effectSprite.OffsetX = -offsetX - spriteSize / 2 + dirX;
+                        effectSprite.OffsetX = -offsetX - (spriteSize / 2) + dirX;
                         effectSprite.OffsetY = -offsetY + dirY;
 
                         if (spriteData.HasStaticY)
@@ -465,11 +465,11 @@ public class AvatarVisualization : RoomObjectSpriteVisualization, IAvatarImageLi
 
                         if (_isLaying)
                         {
-                            effectSprite.RelativeDepth = AVATAR_SPRITE_LAYING_DEPTH - 0.001 * SpriteCount * dirZ;
+                            effectSprite.RelativeDepth = AVATAR_SPRITE_LAYING_DEPTH - (0.001 * SpriteCount * dirZ);
                         }
                         else
                         {
-                            effectSprite.RelativeDepth = AVATAR_SPRITE_DEFAULT_DEPTH - 0.001 * SpriteCount * dirZ;
+                            effectSprite.RelativeDepth = AVATAR_SPRITE_DEFAULT_DEPTH - (0.001 * SpriteCount * dirZ);
                         }
 
                         if (spriteData.Ink == 33)
@@ -1002,11 +1002,11 @@ public class AvatarVisualization : RoomObjectSpriteVisualization, IAvatarImageLi
         if (force || _cachedObjectUpdateId != obj.UpdateId || _cachedGeometryUpdateId != geometry.UpdateId)
         {
             bool changed = animated;
-            int bodyAngle = ((int)(obj.Direction.X - geometry.Direction.X) % 360 + 360) % 360;
+            int bodyAngle = (((int)(obj.Direction.X - geometry.Direction.X) % 360) + 360) % 360;
 
             if (Posture == "sit" && _canStandUp)
             {
-                bodyAngle -= bodyAngle % 90 - 45;
+                bodyAngle -= (bodyAngle % 90) - 45;
             }
 
             int headAngle = _modelHeadDirection;
@@ -1019,11 +1019,11 @@ public class AvatarVisualization : RoomObjectSpriteVisualization, IAvatarImageLi
                 headAngle -= (int)geometry.Direction.X;
             }
 
-            headAngle = (headAngle % 360 + 360) % 360;
+            headAngle = ((headAngle % 360) + 360) % 360;
 
             if ((Posture == "sit" && _canStandUp) || Posture == "swdieback" || Posture == "swdiefront")
             {
-                headAngle -= headAngle % 90 - 45;
+                headAngle -= (headAngle % 90) - 45;
             }
 
             if (bodyAngle != Angle || force)

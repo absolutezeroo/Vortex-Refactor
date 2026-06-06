@@ -1,6 +1,5 @@
 // @see core/window/iterators/EmptyIterator.as
 
-using Vortex.Core.Window.Components;
 using Vortex.Core.Window.Utils;
 
 namespace Vortex.Core.Window.Iterators;

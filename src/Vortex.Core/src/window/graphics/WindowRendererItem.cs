@@ -104,19 +104,9 @@ public class WindowRendererItem : IDisposable
                 // @see WindowRendererItem.as — AS3 uses renderingRectangle (includes etching offsets)
                 Rect2 renderRect = window.renderingRectangle;
                 bool softwareRender = !window.TestParamFlag(16);
-                // Godot adaptation: pass local position so the GC display node is placed
-                // relative to its parent GC, not at the screen-space renderingRectangle origin.
-                // renderingX/Y are screen-space; subtract parent's renderingX/Y for local coords.
-                float localX = window.parent != null
-                    ? window.renderingX - window.parent.renderingX
-                    : window.renderingX;
-                float localY = window.parent != null
-                    ? window.renderingY - window.parent.renderingY
-                    : window.renderingY;
                 Image? newBuffer = graphicContext.SetDrawRegion(
                     renderRect, softwareRender,
-                    clipping ? parentRegion : null,
-                    new Vector2(localX, localY)
+                    clipping ? parentRegion : null
                 );
 
                 if (newBuffer != null)
@@ -248,14 +238,7 @@ public class WindowRendererItem : IDisposable
                     if (gc != null)
                     {
                         // @see WindowRendererItem.as — AS3 uses renderingRectangle
-                        float relocLocalX = window.parent != null
-                            ? window.renderingX - window.parent.renderingX
-                            : window.renderingX;
-                        float relocLocalY = window.parent != null
-                            ? window.renderingY - window.parent.renderingY
-                            : window.renderingY;
-                        gc.SetDrawRegion(window.renderingRectangle, false, null,
-                            new Vector2(relocLocalX, relocLocalY));
+                        gc.SetDrawRegion(window.renderingRectangle, false, null);
                         if (!gc.Visible)
                         {
                             needsRender = true;

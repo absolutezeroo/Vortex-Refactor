@@ -2,7 +2,6 @@ using System.Globalization;
 using System.Xml.Linq;
 
 using Vortex.Room.Object;
-using Vortex.Room.Object.Visualization;
 using Vortex.Room.Utils;
 
 namespace Vortex.Habbo.Room.Object.Visualization.Furniture;

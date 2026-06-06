@@ -5,7 +5,6 @@ using System;
 using Godot;
 
 using Vortex.Core.Window.Events;
-using Vortex.Core.Window.Utils;
 
 namespace Vortex.Core.Window.Components;
 

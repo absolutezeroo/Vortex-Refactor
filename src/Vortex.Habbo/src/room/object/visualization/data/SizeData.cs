@@ -276,7 +276,7 @@ public class SizeData
         return dir?.GetZOffset(layerIndex) ?? 0;
     }
 
-    private bool DefineDirection(DirectionData dirData, System.Collections.Generic.IEnumerable<XElement> layers)
+    private bool DefineDirection(DirectionData dirData, IEnumerable<XElement> layers)
     {
         foreach (XElement layerElement in layers)
         {

@@ -82,7 +82,7 @@ public class LandscapeRasterizer : PlaneRasterizer
 
         if (!plane.IsStatic((int)scale))
         {
-            return new PlaneBitmapData(result, (int)(Math.Round((double)timeStamp / UPDATE_INTERVAL) * UPDATE_INTERVAL + UPDATE_INTERVAL));
+            return new PlaneBitmapData(result, (int)((Math.Round((double)timeStamp / UPDATE_INTERVAL) * UPDATE_INTERVAL) + UPDATE_INTERVAL));
         }
 
         return new PlaneBitmapData(result, -1);
@@ -211,7 +211,7 @@ public class LandscapeRasterizer : PlaneRasterizer
 
         if (!string.IsNullOrEmpty(colorStr))
         {
-            if (colorStr.StartsWith("0x", System.StringComparison.OrdinalIgnoreCase))
+            if (colorStr.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
             {
                 color = uint.Parse(colorStr.AsSpan(2), System.Globalization.NumberStyles.HexNumber);
             }

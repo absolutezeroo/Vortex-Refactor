@@ -2,7 +2,7 @@ namespace Vortex.Habbo.Room.Object.Logic;
 
 using System.Globalization;
 
-using Vortex.Habbo.Room.Messages;
+using Messages;
 using Vortex.Room.Messages;
 
 /// @see com.sulake.habbo.room.object.logic.furniture.FurnitureSongDiskLogic

@@ -120,8 +120,8 @@ public class LegacyWallGeometry
                     }
                 }
 
-                pixelY = (int)(pixelY + (Scale / 4.0 - roundedScale / 2.0));
-                pixelX = (int)(pixelX + Scale / 2.0);
+                pixelY = (int)(pixelY + ((Scale / 4.0) - (roundedScale / 2.0)));
+                pixelX = (int)(pixelX + (Scale / 2.0));
             }
             else
             {
@@ -144,7 +144,7 @@ public class LegacyWallGeometry
                     }
                 }
 
-                pixelY = (int)(pixelY + (Scale / 4.0 - roundedScale / 2.0));
+                pixelY = (int)(pixelY + ((Scale / 4.0) - (roundedScale / 2.0)));
                 pixelX -= roundedScale;
             }
         }
@@ -156,15 +156,15 @@ public class LegacyWallGeometry
 
         if (direction == DIRECTION_RIGHT)
         {
-            locX += pixelX / halfScale - 0.5;
+            locX += (pixelX / halfScale) - 0.5;
             locY += 0.5;
-            locZ -= (pixelY - pixelX / 2.0) / halfScale;
+            locZ -= (pixelY - (pixelX / 2.0)) / halfScale;
         }
         else
         {
-            locY += (halfScale - pixelX) / halfScale - 0.5;
+            locY += ((halfScale - pixelX) / halfScale) - 0.5;
             locX += 0.5;
-            locZ -= (pixelY - (halfScale - pixelX) / 2.0) / halfScale;
+            locZ -= (pixelY - ((halfScale - pixelX) / 2.0)) / halfScale;
         }
 
         return new Vector3d(locX, locY, locZ);
@@ -205,15 +205,15 @@ public class LegacyWallGeometry
         int pixelX = (int)(Scale / 2.0 * offset);
         double heightOffset = -y * 18.0 / 32.0 * Scale / 2.0;
         double tileHeight = GetTileHeight(tileX, tileY);
-        int pixelY = (int)(tileHeight * Scale / 2.0 + heightOffset);
+        int pixelY = (int)((tileHeight * Scale / 2.0) + heightOffset);
 
         if (direction == DIRECTION_RIGHT)
         {
-            pixelY = (int)(pixelY + offset * Scale / 4.0);
+            pixelY = (int)(pixelY + (offset * Scale / 4.0));
         }
         else
         {
-            pixelY = (int)(pixelY + (1 - offset) * Scale / 4.0);
+            pixelY = (int)(pixelY + ((1 - offset) * Scale / 4.0));
         }
 
         return GetLocation(tileX, tileY, pixelX, pixelY, direction);
@@ -242,8 +242,8 @@ public class LegacyWallGeometry
                     tileY = (int)Math.Floor(location.Y + 0.5);
 
                     double tileHeight = GetTileHeight(tileX, tileY);
-                    pixelX = halfScale - (location.Y - tileY + 0.5) * halfScale;
-                    pixelY = (tileHeight - location.Z) * halfScale + (halfScale - pixelX) / 2.0;
+                    pixelX = halfScale - ((location.Y - tileY + 0.5) * halfScale);
+                    pixelY = ((tileHeight - location.Z) * halfScale) + ((halfScale - pixelX) / 2.0);
                     dir = DIRECTION_LEFT;
 
                     break;
@@ -255,7 +255,7 @@ public class LegacyWallGeometry
 
                     double tileHeight = GetTileHeight(tileX, tileY);
                     pixelX = (location.X + 0.5 - tileX) * halfScale;
-                    pixelY = (tileHeight - location.Z) * halfScale + pixelX / 2.0;
+                    pixelY = ((tileHeight - location.Z) * halfScale) + (pixelX / 2.0);
                     dir = DIRECTION_RIGHT;
 
                     break;

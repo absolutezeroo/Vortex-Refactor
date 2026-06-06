@@ -139,7 +139,7 @@ public class FurnitureParticleSystem(AnimatedFurnitureVisualization visualizatio
             {
                 double py = particle.Y;
                 int screenX = _canvasOffsetX + (int)((particle.X - particle.Z) * projScale / 10.0 * _scale);
-                int screenY = _canvasOffsetY - offsetYScaled + (int)((py + (particle.X + particle.Z) / 2.0) * projScale / 10.0 * _scale);
+                int screenY = _canvasOffsetY - offsetYScaled + (int)((py + ((particle.X + particle.Z) / 2.0)) * projScale / 10.0 * _scale);
 
                 IGraphicAsset? asset = particle.GetAsset();
 

@@ -1,6 +1,5 @@
 // @see habbo/window/widgets/IIlluminaInputHandler.as
 
-using Vortex.Core.Window;
 using Vortex.Core.Window.Components;
 
 namespace Vortex.Habbo.Window.Widgets;

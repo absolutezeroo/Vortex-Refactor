@@ -40,7 +40,7 @@ public class VortexBundleAsset(AssetTypeDeclaration? declaration = null, string?
     {
         if (content is not VortexBundleData data)
         {
-            Logging.Logger.Warn(
+            Logger.Warn(
                 $"[VortexBundleAsset] SetUnknownContent: content is {content?.GetType().Name ?? "null"}, not VortexBundleData");
             return;
         }
@@ -48,7 +48,7 @@ public class VortexBundleAsset(AssetTypeDeclaration? declaration = null, string?
         BundleData = data;
         Spritesheet = VortexBundleLoader.CreateSpritesheet(data);
 
-        Logging.Logger.Info(
+        Logger.Info(
             $"[VortexBundleAsset] SetUnknownContent: v{data.Version} flags=0x{data.Flags:X}, assets={data.Assets?.Length ?? 0}, aliases={data.Aliases?.Length ?? 0}, strings={data.StringTable?.Count ?? 0}, sheetMeta={data.SpritesheetMeta != null}, sheetImg={data.SpritesheetImage?.Length ?? 0}b, spritesheet={Spritesheet != null}");
     }
 
@@ -150,7 +150,7 @@ public class VortexBundleAsset(AssetTypeDeclaration? declaration = null, string?
     {
         if (BundleData == null || Spritesheet == null || BundleData.StringTable == null)
         {
-            Logging.Logger.Warn(
+            Logger.Warn(
                 $"[VortexBundleAsset] PopulateLibrary bail: bundleData={BundleData != null}, spritesheet={Spritesheet != null}, stringTable={BundleData?.StringTable != null}");
             return;
         }

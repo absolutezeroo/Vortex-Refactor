@@ -322,7 +322,7 @@ public class FurnitureVisualization : RoomObjectSpriteVisualization
 
         if (_previousState != obj.UpdateId || scale != _previousScale || geometryDirection != _cachedGeometryDirection)
         {
-            double angle = ((obj.Direction.X - (geometryDirection + 135)) % 360 + 360) % 360;
+            double angle = (((obj.Direction.X - (geometryDirection + 135)) % 360) + 360) % 360;
 
             if (Data != null)
             {

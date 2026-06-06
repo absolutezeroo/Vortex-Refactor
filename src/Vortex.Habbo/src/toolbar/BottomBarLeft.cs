@@ -1,7 +1,6 @@
 // @see WIN63-202407091256-704579380-Source-main/habbo/toolbar/BottomBarLeft.as
 
 using System;
-using System.Collections.Generic;
 using System.Xml.Linq;
 
 using Godot;
@@ -11,6 +10,7 @@ using Vortex.Core.Runtime.Events;
 using Vortex.Core.Window;
 using Vortex.Core.Window.Components;
 using Vortex.Core.Window.Events;
+using Vortex.Habbo.Toolbar.MeMenu;
 using Vortex.Habbo.Window;
 using Vortex.Habbo.Window.Utils;
 
@@ -73,6 +73,9 @@ public class BottomBarLeft : ILinkEventTracker
     /// @see BottomBarLeft.as::_disposed
     private bool _disposed;
 
+    /// @see BottomBarLeft.as::var_2280
+    private MeMenuNewController? _meMenuController;
+
     // @see BottomBarLeft.as::var_4482, var_4400, var_4359
     private int _unseenMiniMailCount;
     private int _unseenAchievementCount;
@@ -93,8 +96,8 @@ public class BottomBarLeft : ILinkEventTracker
         _windowManager = param2;
         _assets = param3;
 
-        // TODO(as3-port): MeMenuNewController — not ported yet
-        // _meMenuController = new MeMenuNewController(param1, this);
+        // @see BottomBarLeft.as::BottomBarLeft — create me menu controller
+        _meMenuController = new MeMenuNewController(param1, this);
 
         // @see BottomBarLeft.as::BottomBarLeft — get layout XML from component assets
         XmlAsset? xmlAsset = param3?.GetAssetByName("bottom_bar_left_xml") as XmlAsset;
@@ -210,7 +213,12 @@ public class BottomBarLeft : ILinkEventTracker
             return;
         }
 
-        // TODO(as3-port): MeMenuNewController dispose
+        // @see BottomBarLeft.as::dispose
+        if (_meMenuController != null)
+        {
+            _meMenuController.Dispose();
+            _meMenuController = null;
+        }
 
         _meMenuBitmap = null;
         _unseenItemCounters.Clear();
@@ -296,9 +304,9 @@ public class BottomBarLeft : ILinkEventTracker
         bool inRoom = state is HabboToolbarEnum.TOOLBAR_STATE_ROOM_VIEW
                 or HabboToolbarEnum.TOOLBAR_STATE_NOOB_HOME
                 or HabboToolbarEnum.TOOLBAR_STATE_NOOB_NOT_HOME
-            || _isCollapsed && _savedState is HabboToolbarEnum.TOOLBAR_STATE_ROOM_VIEW
+            || (_isCollapsed && _savedState is HabboToolbarEnum.TOOLBAR_STATE_ROOM_VIEW
                 or HabboToolbarEnum.TOOLBAR_STATE_NOOB_HOME
-                or HabboToolbarEnum.TOOLBAR_STATE_NOOB_NOT_HOME;
+                or HabboToolbarEnum.TOOLBAR_STATE_NOOB_NOT_HOME);
 
         List<IWindow> toggleWindows = [];
         _window.GroupChildrenWithTag("TOGGLE", toggleWindows, -1);
@@ -384,6 +392,69 @@ public class BottomBarLeft : ILinkEventTracker
         return _toolbar.GetBoolean("toolbar.new_additions.notification.enabled");
     }
 
+    /// @see BottomBarLeft.as::get memenu
+    public MeMenuNewController? memenu => _meMenuController;
+
+    /// @see BottomBarLeft.as::set unseenMiniMailMessageCount
+    public int unseenMiniMailMessageCount
+    {
+        set => _unseenMiniMailCount = value;
+    }
+
+    /// @see BottomBarLeft.as::set unseenAchievementCount
+    public int unseenAchievementCount
+    {
+        set => _unseenAchievementCount = value;
+    }
+
+    /// @see BottomBarLeft.as::set unseenForumsCount
+    public int unseenForumsCount
+    {
+        set => _unseenForumsCount = value;
+    }
+
+    /// @see BottomBarLeft.as::get unseenMeMenuCount
+    public int unseenMeMenuCount => _unseenMiniMailCount + _unseenAchievementCount + _unseenForumsCount;
+
+    /// @see HabboToolbar.as::onCatalogEvent — show/hide new items label
+    public void OnCatalogEvent(string eventType)
+    {
+        switch (eventType)
+        {
+            case "CATALOG_NEW_ITEMS_SHOW":
+                if (_newItemsLabel != null && _newItemsNotificationEnabled)
+                {
+                    _newItemsLabel.visible = true;
+                }
+                break;
+            case "CATALOG_NEW_ITEMS_HIDE":
+                if (_newItemsLabel != null)
+                {
+                    _newItemsLabel.visible = false;
+                }
+                break;
+        }
+    }
+
+    /// @see HabboToolbar.as::onWiredMenuEvent — update WIRED_MENU icon visibility
+    public void OnWiredMenuEvent()
+    {
+        if (_window == null)
+        {
+            return;
+        }
+
+        string? wiredMenuName = HabboToolbarIconEnum.GetIconName(HabboToolbarIconEnum.ICON_WIRED_MENU);
+        IWindowContainer? wiredMenu = _window.FindChildByName(wiredMenuName!) as IWindowContainer;
+        if (wiredMenu != null)
+        {
+            // TODO(as3-port): IHabboUserDefinedRoomEvents.showToolbarMenuButton — not ported yet; keep hidden
+            wiredMenu.visible = false;
+        }
+
+        CheckSize();
+    }
+
     // --- ILinkEventTracker ---
 
     /// @see BottomBarLeft.as::get linkPattern
@@ -401,7 +472,7 @@ public class BottomBarLeft : ILinkEventTracker
         switch (parts[1])
         {
             case "memenu":
-                // TODO(as3-port): MeMenuNewController.toggleVisibility — not ported yet
+                _meMenuController?.ToggleVisibility();
                 break;
             case "highlight":
                 if (parts.Length <= 2)
@@ -452,9 +523,13 @@ public class BottomBarLeft : ILinkEventTracker
             _window.y = desktop.height - _window.height;
         }
 
-        _window.width = ICON_REGION_WIDTH * CalculateNewWidth() + WINDOW_RIGHT_PADDING + TOOLBAR_EXTENSION_MARGIN;
+        _window.width = (ICON_REGION_WIDTH * CalculateNewWidth()) + WINDOW_RIGHT_PADDING + TOOLBAR_EXTENSION_MARGIN;
 
-        // TODO(as3-port): MeMenuNewController.reposition — not ported yet
+        // @see BottomBarLeft.as::checkSize — reposition me menu when not collapsed
+        if (!_isCollapsed)
+        {
+            _meMenuController?.Reposition();
+        }
 
         _window.Invalidate();
     }

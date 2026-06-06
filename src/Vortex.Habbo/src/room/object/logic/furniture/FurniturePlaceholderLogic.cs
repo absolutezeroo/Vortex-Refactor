@@ -1,6 +1,6 @@
 namespace Vortex.Habbo.Room.Object.Logic;
 
-using Vortex.Habbo.Room.Events;
+using Events;
 
 /// @see com.sulake.habbo.room.object.logic.furniture.FurniturePlaceholderLogic
 public class FurniturePlaceholderLogic : FurnitureLogic

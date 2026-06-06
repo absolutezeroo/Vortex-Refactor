@@ -2,8 +2,7 @@ namespace Vortex.Habbo.Room.Object.Logic;
 
 using System.Xml.Linq;
 
-using Vortex.Habbo.Room.Events;
-using Vortex.Room.Utils;
+using Events;
 
 /// @see com.sulake.habbo.room.object.logic.furniture.FurnitureExternalImageLogic
 public class FurnitureExternalImageLogic : FurnitureMultiStateLogic
@@ -21,7 +20,7 @@ public class FurnitureExternalImageLogic : FurnitureMultiStateLogic
         return GetAllEventTypes(base.GetEventTypes() ?? [], types);
     }
 
-    public override void Initialize(System.Xml.Linq.XElement? xml)
+    public override void Initialize(XElement? xml)
     {
         base.Initialize(xml);
 

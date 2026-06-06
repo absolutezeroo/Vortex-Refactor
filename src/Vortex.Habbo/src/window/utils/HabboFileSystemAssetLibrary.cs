@@ -29,7 +29,7 @@ public sealed class HabboFileSystemAssetLibrary : IAssetLibrary
     public IAsset? GetAssetByName(string name)
     {
         object? content = name.EndsWith("_xml", StringComparison.Ordinal)
-            ? (object?)HabboAssetResolver.LoadXmlAsset(name)
+            ? HabboAssetResolver.LoadXmlAsset(name)
             : HabboAssetResolver.LoadImageAsset(name);
 
         return content is not null ? new ContentAsset(content) : null;

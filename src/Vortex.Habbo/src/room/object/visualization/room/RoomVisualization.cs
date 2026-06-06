@@ -4,7 +4,6 @@ using System.Xml.Linq;
 
 using Godot;
 
-using Vortex.Habbo.Room.Object.Visualization.Room.Rasterizer;
 using Vortex.Room.Object;
 using Vortex.Room.Object.Enum;
 using Vortex.Room.Object.Visualization;
@@ -381,11 +380,11 @@ public class RoomVisualization : RoomObjectSpriteVisualization, IRoomPlaneContai
             {
                 if (plane.Visible)
                 {
-                    double depth = plane.RelativeDepth + FloorRelativeDepth + spriteIndex / 1000.0;
+                    double depth = plane.RelativeDepth + FloorRelativeDepth + (spriteIndex / 1000.0);
 
                     if (plane.Type != RoomPlane.TYPE_FLOOR)
                     {
-                        depth = plane.RelativeDepth + WallRelativeDepth + spriteIndex / 1000.0;
+                        depth = plane.RelativeDepth + WallRelativeDepth + (spriteIndex / 1000.0);
 
                         if (plane.LeftSide.Length < 1 || plane.RightSide.Length < 1)
                         {
@@ -572,7 +571,7 @@ public class RoomVisualization : RoomObjectSpriteVisualization, IRoomPlaneContai
             }
 
             IVector3d normal = Vector3d.CrossProduct(leftSide, rightSide);
-            randomSeed = randomSeed * 7613 + 517;
+            randomSeed = (randomSeed * 7613) + 517;
 
             RoomPlane? plane = null;
 

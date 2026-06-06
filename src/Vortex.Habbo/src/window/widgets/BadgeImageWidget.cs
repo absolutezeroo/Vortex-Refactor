@@ -15,8 +15,6 @@ using Vortex.Habbo.Communication;
 using Vortex.Habbo.Communication.Messages.Incoming.Users;
 using Vortex.Habbo.Window.Enum;
 
-using IDisposable = Vortex.Core.Runtime.IDisposable;
-
 namespace Vortex.Habbo.Window.Widgets;
 
 /// @see habbo/window/widgets/BadgeImageWidget.as

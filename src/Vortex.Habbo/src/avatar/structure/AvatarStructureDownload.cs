@@ -65,7 +65,7 @@ public class AvatarStructureDownload
 
         try
         {
-            XElement xml = System.Xml.Linq.XElement.Parse(xmlContent);
+            XElement xml = XElement.Parse(xmlContent);
             _target.AppendXml(xml);
             IsDone = true;
             Events.DispatchEvent(STRUCTURE_DONE);

@@ -1,7 +1,5 @@
 // @see core/window/services/IMouseDraggingService.as
 
-using Vortex.Core.Window.Components;
-
 namespace Vortex.Core.Window.Services;
 
 /// @see core/window/services/IMouseDraggingService.as

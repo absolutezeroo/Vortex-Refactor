@@ -1,7 +1,5 @@
 // @see core/window/utils/IIterator.as
 
-using Vortex.Core.Window.Components;
-
 namespace Vortex.Core.Window.Utils;
 
 /// @see core/window/utils/IIterator.as — AS3 iterators extend Proxy; this interface captures the Proxy methods

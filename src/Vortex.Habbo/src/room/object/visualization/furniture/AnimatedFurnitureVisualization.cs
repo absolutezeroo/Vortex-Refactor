@@ -1,5 +1,3 @@
-using System;
-
 using Vortex.Habbo.Room.Object.Visualization.Data;
 using Vortex.Room.Object;
 using Vortex.Room.Object.Visualization;

@@ -1134,7 +1134,7 @@ public class RoomContentLoader : IRoomContentLoader, IFurniDataListener
     {
         string localPath = "res://data/bundles/" + filename;
 
-        if (Godot.FileAccess.FileExists(localPath))
+        if (FileAccess.FileExists(localPath))
         {
             return localPath;
         }

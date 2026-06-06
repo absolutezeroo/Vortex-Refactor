@@ -103,7 +103,7 @@ public class RoomObjectCache(string depthKey)
         return result;
     }
 
-    private static bool IsSkewedSprite(Object.Visualization.IRoomObjectSprite sprite)
+    private static bool IsSkewedSprite(IRoomObjectSprite sprite)
     {
         if (sprite.ObjectType == null)
         {

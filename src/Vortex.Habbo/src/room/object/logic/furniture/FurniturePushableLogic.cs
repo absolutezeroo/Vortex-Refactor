@@ -1,6 +1,6 @@
 namespace Vortex.Habbo.Room.Object.Logic;
 
-using Vortex.Habbo.Room.Messages;
+using Messages;
 using Vortex.Room.Messages;
 using Vortex.Room.Object;
 using Vortex.Room.Utils;
@@ -60,7 +60,7 @@ public class FurniturePushableLogic : FurnitureMultiStateLogic
                 }
             }
 
-            int newState = intervalValue * MAX_ANIMATION_COUNT + animationValue;
+            int newState = (intervalValue * MAX_ANIMATION_COUNT) + animationValue;
 
             Object.SetState(newState, 0);
             _lastLocation.Assign(location);

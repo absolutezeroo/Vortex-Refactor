@@ -386,7 +386,7 @@ public partial class HabboLoadingScreen : Control, IHabboLoadingScreen
 
         // Try static manifest property first
         PropertyInfo? manifestProperty =
-            param1.GetProperty("manifest", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            param1.GetProperty("manifest", BindingFlags.Public | BindingFlags.Static);
         if (manifestProperty != null)
         {
             try

@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-using Vortex.Bundle.Data;
+﻿using Vortex.Bundle.Data;
 using Vortex.Bundle.IO;
 
 namespace Vortex.Bundle.Converter;

@@ -412,10 +412,10 @@ public class BitmapSkinRenderer : SkinRenderer
 
             for (int i = 0; i < length; i += 4)
             {
-                data[i] = (byte)Math.Clamp((int)((data[i] / 255f * ct.RedMultiplier + rOff) * 255f), 0, 255);
-                data[i + 1] = (byte)Math.Clamp((int)((data[i + 1] / 255f * ct.GreenMultiplier + gOff) * 255f), 0, 255);
-                data[i + 2] = (byte)Math.Clamp((int)((data[i + 2] / 255f * ct.BlueMultiplier + bOff) * 255f), 0, 255);
-                data[i + 3] = (byte)Math.Clamp((int)((data[i + 3] / 255f * ct.AlphaMultiplier + aOff) * 255f), 0, 255);
+                data[i] = (byte)Math.Clamp((int)(((data[i] / 255f * ct.RedMultiplier) + rOff) * 255f), 0, 255);
+                data[i + 1] = (byte)Math.Clamp((int)(((data[i + 1] / 255f * ct.GreenMultiplier) + gOff) * 255f), 0, 255);
+                data[i + 2] = (byte)Math.Clamp((int)(((data[i + 2] / 255f * ct.BlueMultiplier) + bOff) * 255f), 0, 255);
+                data[i + 3] = (byte)Math.Clamp((int)(((data[i + 3] / 255f * ct.AlphaMultiplier) + aOff) * 255f), 0, 255);
             }
         }
 

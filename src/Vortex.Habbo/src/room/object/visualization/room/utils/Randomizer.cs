@@ -1,5 +1,3 @@
-using System;
-
 namespace Vortex.Habbo.Room.Object.Visualization.Room.Utils;
 
 /// @see com.sulake.habbo.room.object.visualization.room.utils.Randomizer
@@ -88,7 +86,7 @@ public class Randomizer
 
     private int Iterate()
     {
-        int value = _multiplier * _seed + _increment;
+        int value = (_multiplier * _seed) + _increment;
 
         if (value < 0)
         {
@@ -110,6 +108,6 @@ public class Randomizer
             return min;
         }
 
-        return (int)(min + (double)value / _modulus * range);
+        return (int)(min + ((double)value / _modulus * range));
     }
 }

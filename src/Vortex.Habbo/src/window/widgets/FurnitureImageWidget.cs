@@ -10,8 +10,6 @@ using Vortex.Core.Window.Iterators;
 using Vortex.Core.Window.Utils;
 using Vortex.Habbo.Room;
 
-using IDisposable = Vortex.Core.Runtime.IDisposable;
-
 namespace Vortex.Habbo.Window.Widgets;
 
 /// @see habbo/window/widgets/FurnitureImageWidget.as

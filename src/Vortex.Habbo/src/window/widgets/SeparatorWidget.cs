@@ -105,7 +105,7 @@ public class SeparatorWidget : ISeparatorWidget, IWidget
         // @see SeparatorWidget.as — load separator asset and tile across canvas
         string assetName = _vertical ? BORDER_IMAGE_VERTICAL : BORDER_IMAGE_HORIZONTAL;
         BitmapDataAsset? asset = _windowManager.FindAssetByName(assetName) as BitmapDataAsset;
-        if (asset?.Content is not Godot.Image sourceImage)
+        if (asset?.Content is not Image sourceImage)
         {
             return;
         }
@@ -122,7 +122,7 @@ public class SeparatorWidget : ISeparatorWidget, IWidget
         }
 
         // @see SeparatorWidget.as — tile the source image across the canvas area
-        Image? result = Godot.Image.CreateEmpty(canvasW, canvasH, false, Godot.Image.Format.Rgba8);
+        Image? result = Image.CreateEmpty(canvasW, canvasH, false, Image.Format.Rgba8);
 
         if (_vertical)
         {
@@ -131,7 +131,7 @@ public class SeparatorWidget : ISeparatorWidget, IWidget
                  py < canvasH;
                  py += srcH)
             {
-                result.BlitRect(sourceImage, new Godot.Rect2I(0, 0, srcW, srcH), new Godot.Vector2I(px, py));
+                result.BlitRect(sourceImage, new Rect2I(0, 0, srcW, srcH), new Vector2I(px, py));
             }
         }
         else
@@ -141,7 +141,7 @@ public class SeparatorWidget : ISeparatorWidget, IWidget
                  px < canvasW;
                  px += srcW)
             {
-                result.BlitRect(sourceImage, new Godot.Rect2I(0, 0, srcW, srcH), new Godot.Vector2I(px, py));
+                result.BlitRect(sourceImage, new Rect2I(0, 0, srcW, srcH), new Vector2I(px, py));
             }
         }
 

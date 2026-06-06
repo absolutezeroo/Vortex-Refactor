@@ -2,7 +2,7 @@ namespace Vortex.Habbo.Room.Object.Logic;
 
 using System.Xml.Linq;
 
-using Vortex.Habbo.Room.Events;
+using Events;
 using Vortex.Room.Events;
 using Vortex.Room.Utils;
 

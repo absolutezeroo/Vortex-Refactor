@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 using Vortex.Core.Communication.Messages;
 
 namespace Vortex.Habbo.Communication.Messages.Parser.Room.Pets;

@@ -1,8 +1,6 @@
 using System;
 using System.Text.Json;
 
-using Godot;
-
 using Vortex.Room.Object;
 using Vortex.Room.Object.Visualization;
 using Vortex.Room.Object.Visualization.Utils;

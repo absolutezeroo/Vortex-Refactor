@@ -88,6 +88,12 @@ public static class HabboAssetResolver
             break;
         }
 
+        if (image == null)
+        {
+            string probe = $"res://assets/images/{fileName}";
+            GD.PrintErr($"[HabboAssetResolver] MISS name='{assetName}' fileName='{fileName}' resPath='{probe}' importedExists={ResourceLoader.Exists(probe)}");
+        }
+
         _imageCache[assetName] = image;
         return image;
     }
@@ -147,7 +153,7 @@ public static class HabboAssetResolver
         {
             return File.ReadAllText(absPath);
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
             GD.PrintErr($"[HabboAssetResolver] Failed to load text asset: {absPath} — {e.Message}");
             return null;

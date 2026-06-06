@@ -2,9 +2,12 @@
 
 using System;
 
+using Vortex.Core.Communication.Messages;
 using Vortex.Core.Window;
 using Vortex.Core.Window.Components;
 using Vortex.Core.Window.Events;
+using Vortex.Habbo.Communication.Messages.Incoming.Competition;
+using Vortex.Habbo.Communication.Messages.Outgoing.Competition;
 
 namespace Vortex.Habbo.FriendBar.LandingView;
 
@@ -13,6 +16,18 @@ public sealed class WidgetContainerLayout : IDisposable
 {
     private const string DEFAULT_LAYOUT = "landing_view_default_dynamic_layout";
     private const string GENERIC_RECEPTION_LAYOUT = "landing_view_generic_reception";
+    private static readonly string[] BackgroundElementNames =
+    [
+        "background_back",
+        "background_front",
+        "background_gradient_top",
+        "background_hotel_top",
+        "background_gradient",
+        "background_right",
+        "background_horizon",
+        "background_left",
+        "background_left_bottom",
+    ];
 
     private readonly HabboLandingView _landingView;
     private IWindowContainer? _window;
@@ -21,6 +36,8 @@ public sealed class WidgetContainerLayout : IDisposable
     private int _orgWindowHeight;
     private bool _dynamicLayoutActive;
     private IDesktopWindow? _desktopWindow;
+    private IMessageEvent? _timingCodeEvent;
+    private string _backgroundTimingCode = string.Empty;
 
     /// @see WidgetContainerLayout.as::WidgetContainerLayout
     public WidgetContainerLayout(HabboLandingView landingView)
@@ -34,9 +51,12 @@ public sealed class WidgetContainerLayout : IDisposable
     /// @see WidgetContainerLayout.as::activate
     public void Activate()
     {
+        bool createdWindow = false;
+
         if (_window == null)
         {
             CreateWindow();
+            createdWindow = _window != null;
         }
 
         if (_window == null)
@@ -49,6 +69,11 @@ public sealed class WidgetContainerLayout : IDisposable
 
         _window.visible = true;
         _window.Invalidate();
+
+        if (createdWindow)
+        {
+            RequestCurrentTimingCode();
+        }
     }
 
     /// @see WidgetContainerLayout.as::disable
@@ -63,6 +88,12 @@ public sealed class WidgetContainerLayout : IDisposable
     /// @see WidgetContainerLayout.as::dispose
     public void Dispose()
     {
+        if (_timingCodeEvent != null)
+        {
+            _landingView.CommunicationManager?.RemoveHabboConnectionMessageEvent(_timingCodeEvent);
+            _timingCodeEvent = null;
+        }
+
         if (_desktopWindow != null)
         {
             _desktopWindow.RemoveEventListener(WindowEvent.WE_RESIZED, OnDesktopResized);
@@ -232,6 +263,86 @@ public sealed class WidgetContainerLayout : IDisposable
     private bool IsGenericReceptionLayout()
     {
         return string.Equals(_layoutName ?? GetLayout(), GENERIC_RECEPTION_LAYOUT, StringComparison.Ordinal);
+    }
+
+    /// @see WidgetContainerLayout.as::activate
+    private void RequestCurrentTimingCode()
+    {
+        if (_landingView.CommunicationManager == null)
+        {
+            return;
+        }
+
+        if (_timingCodeEvent == null)
+        {
+            _timingCodeEvent = _landingView.CommunicationManager.AddHabboConnectionMessageEvent(
+                new CurrentTimingCodeMessageEvent(OnTimingCode)
+            );
+        }
+
+        _backgroundTimingCode = _landingView.GetProperty("landing.view.bgtiming");
+        _landingView.CommunicationManager.connection?.Send(
+            new GetCurrentTimingCodeMessageComposer(_backgroundTimingCode)
+        );
+    }
+
+    /// @see WidgetContainerLayout.as::onTimingCode
+    private void OnTimingCode(IMessageEvent param1)
+    {
+        if (param1 is not CurrentTimingCodeMessageEvent timingCodeEvent)
+        {
+            return;
+        }
+
+        if (!string.Equals(timingCodeEvent.SchedulingStr, _backgroundTimingCode, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        SetBackgroundGraphics(timingCodeEvent.Code);
+        _window?.Invalidate();
+    }
+
+    /// @see WidgetContainerLayout.as::setBackgroundGraphics
+    private void SetBackgroundGraphics(string? timingCode)
+    {
+        if (_window == null)
+        {
+            return;
+        }
+
+        string prefix = string.IsNullOrEmpty(timingCode) ? string.Empty : timingCode + ".";
+
+        foreach (string elementName in BackgroundElementNames)
+        {
+            if (_window.FindChildByName(elementName) is not IStaticBitmapWrapperWindow bitmapWindow)
+            {
+                continue;
+            }
+
+            if (bitmapWindow is not IWindow window)
+            {
+                continue;
+            }
+
+            string visibleKey = "landing.view." + prefix + elementName + ".visible";
+
+            if (_landingView.GetProperty(visibleKey) == "false")
+            {
+                window.visible = false;
+                continue;
+            }
+
+            window.visible = true;
+
+            string uriKey = "landing.view." + prefix + elementName + ".uri";
+            string uri = _landingView.GetProperty(uriKey);
+
+            if (!string.IsNullOrEmpty(uri) && !string.Equals(bitmapWindow.AssetUri, uri, StringComparison.Ordinal))
+            {
+                bitmapWindow.AssetUri = uri;
+            }
+        }
     }
 
     private void AttachToDesktop()

@@ -88,7 +88,7 @@ public class FurnitureParticleSystemEmitter(string name = "", int spriteId = -1)
         _particlesPerFrame = particlesPerFrame;
         _energy = energy;
 
-        double len = Math.Sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        double len = Math.Sqrt((dirX * dirX) + (dirY * dirY) + (dirZ * dirZ));
 
         if (len > 0)
         {
@@ -151,9 +151,9 @@ public class FurnitureParticleSystemEmitter(string name = "", int spriteId = -1)
             double prevY = Y;
             double prevZ = Z;
 
-            X = (2 - _airFriction) * X - (1 - _airFriction) * LastX;
-            Y = (2 - _airFriction) * Y - (1 - _airFriction) * LastY + _gravity * dt2;
-            Z = (2 - _airFriction) * Z - (1 - _airFriction) * LastZ;
+            X = ((2 - _airFriction) * X) - ((1 - _airFriction) * LastX);
+            Y = ((2 - _airFriction) * Y) - ((1 - _airFriction) * LastY) + (_gravity * dt2);
+            Z = ((2 - _airFriction) * Z) - ((1 - _airFriction) * LastZ);
 
             LastX = prevX;
             LastY = prevY;
@@ -170,9 +170,9 @@ public class FurnitureParticleSystemEmitter(string name = "", int spriteId = -1)
             double prevY = p.Y;
             double prevZ = p.Z;
 
-            p.X = (2 - _airFriction) * p.X - (1 - _airFriction) * p.LastX;
-            p.Y = (2 - _airFriction) * p.Y - (1 - _airFriction) * p.LastY + _gravity * dt2;
-            p.Z = (2 - _airFriction) * p.Z - (1 - _airFriction) * p.LastZ;
+            p.X = ((2 - _airFriction) * p.X) - ((1 - _airFriction) * p.LastX);
+            p.Y = ((2 - _airFriction) * p.Y) - ((1 - _airFriction) * p.LastY) + (_gravity * dt2);
+            p.Z = ((2 - _airFriction) * p.Z) - ((1 - _airFriction) * p.LastZ);
 
             p.LastX = prevX;
             p.LastY = prevY;
@@ -220,7 +220,7 @@ public class FurnitureParticleSystemEmitter(string name = "", int spriteId = -1)
                     break;
             }
 
-            double len = Math.Sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+            double len = Math.Sqrt((dirX * dirX) + (dirY * dirY) + (dirZ * dirZ));
 
             if (len > 0)
             {
@@ -239,14 +239,14 @@ public class FurnitureParticleSystemEmitter(string name = "", int spriteId = -1)
 
             if (config != null)
             {
-                lifeTime = (int)Math.Floor(Random.Shared.NextDouble() * config.LifeTime + 10);
+                lifeTime = (int)Math.Floor((Random.Shared.NextDouble() * config.LifeTime) + 10);
                 isEmitter = config.IsEmitter;
                 frames = config.Frames;
                 fade = config.Fade;
             }
             else
             {
-                lifeTime = (int)Math.Floor(Random.Shared.NextDouble() * 20 + 10);
+                lifeTime = (int)Math.Floor((Random.Shared.NextDouble() * 20) + 10);
                 isEmitter = false;
                 frames = [];
                 fade = false;

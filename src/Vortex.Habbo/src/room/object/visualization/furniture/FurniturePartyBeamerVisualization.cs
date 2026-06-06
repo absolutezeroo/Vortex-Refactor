@@ -83,7 +83,7 @@ public class FurniturePartyBeamerVisualization : AnimatedFurnitureVisualization
             diameter = AREA_DIAMETER_LARGE;
         }
 
-        double newPos = position + dir * speed;
+        double newPos = position + (dir * speed);
 
         if (Math.Abs(newPos) >= diameter)
         {
@@ -146,6 +146,6 @@ public class FurniturePartyBeamerVisualization : AnimatedFurnitureVisualization
 
     private static double GetRandomAmplitudeFactor()
     {
-        return Random.Shared.NextDouble() * 0.30 + 0.15;
+        return (Random.Shared.NextDouble() * 0.30) + 0.15;
     }
 }

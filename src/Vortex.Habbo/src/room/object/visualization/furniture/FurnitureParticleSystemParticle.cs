@@ -88,9 +88,9 @@ public class FurnitureParticleSystemParticle
         DirectionX = dirX * speed;
         DirectionY = dirY * speed;
         DirectionZ = dirZ * speed;
-        _lastX = X - DirectionX * timeStep;
-        _lastY = Y - DirectionY * timeStep;
-        _lastZ = Z - DirectionZ * timeStep;
+        _lastX = X - (DirectionX * timeStep);
+        _lastY = Y - (DirectionY * timeStep);
+        _lastZ = Z - (DirectionZ * timeStep);
         Age = 0;
         HasMoved = false;
         _lifeTime = lifeTime;
@@ -98,7 +98,7 @@ public class FurnitureParticleSystemParticle
         _frames = frames;
         Fade = fade;
         AlphaMultiplier = 1;
-        _fadeTime = 0.5 + Random.Shared.NextDouble() * 0.5;
+        _fadeTime = 0.5 + (Random.Shared.NextDouble() * 0.5);
     }
 
     public virtual void Update()

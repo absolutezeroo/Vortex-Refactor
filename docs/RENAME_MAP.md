@@ -84,6 +84,14 @@ canonical C# name. See `docs/FIDELITY_BOUNDARY.md` for why these renames are all
 | `class_3441` | _TBD_ | Interface | `core/window/utils/class_3441.as` | proposed | Extends `IClass3348` (outside window tree). Resolve the pair against dump. |
 | `class_3562` | _TBD_ | Interface | `core/window/utils/class_3562.as` | proposed | Member `Visible` only. Insufficient signal — confirm against dump. |
 
+## Habbo — `toolbar/`
+
+| AS3 | C# canonical | Kind | @see | Status | Evidence |
+|---|---|---|---|---|---|
+| `class_3491` | `ICurrencyIndicator` | Interface | `…/toolbar/extensions/purse/class_3491.as` | confirmed | Members `Dispose()`, `window`, `RegisterUpdateEvents(object?)` — currency indicator contract for purse area. |
+| `class_3571` | `ExtensionFixedSlotsEnum` | Consts (int) | `…/toolbar/class_3571.as` | confirmed | `SLOT_PURSE=0`, `SLOT_SETTINGS=1` — fixed slot indices for extension view. |
+| `class_3422` | `WingCodeEnum` | Consts (string) | `…/toolbar/class_3422.as` | confirmed | `Social/Group/Quest/Game` wing codes for toolbar wings. |
+
 ## Habbo — `enum/`
 
 | AS3 | C# canonical | Kind | @see | Status | Evidence |

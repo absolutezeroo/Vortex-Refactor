@@ -88,3 +88,11 @@ Use one entry per adaptation:
 - Godot/C# adaptation: The parsers use `TextFileLoader` to fetch the configured URL synchronously and dispatch the same ready events after parsing.
 - Why behavior is preserved: Data source, parse format selection, ready events, and listener flow remain AS3-equivalent; only Flash's async asset transport is mapped to the existing C# loader.
 - Risk level (Low/Medium/High): Medium
+
+## [Asset Library] Source Extracted Embed Hydration
+- Source reference: `WIN63-202407091256-704579380-Source-main/core/assets/AssetLibrary.as::fetchLibraryContents`, `WIN63-202111081545-75921380-Source-main/src/HabboAvatarRenderLib.as`
+- Target file: `src/Vortex.Core/src/assets/AssetLibrary.cs`
+- Original behavior: AS3 manifest loading instantiates embedded asset classes through `param2[assetName]`; generated classes use `[Embed(source=...)]` for XML byte arrays and PNG bitmaps.
+- Godot/C# adaptation: Manifest loading resolves the generated AS3 static asset field and its `[Embed(source=...)]` file in the source dump, then stores those bytes in the C# asset.
+- Why behavior is preserved: The bytes come from the same dump files referenced by the generated AS3 classes; only Flash's compile-time embed lookup is replaced by a runtime lookup over the extracted source tree.
+- Risk level (Low/Medium/High): Medium

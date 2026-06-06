@@ -140,6 +140,20 @@ public class ResourceManager : IResourceManager
                     PassMissingImageToCallback(library, receiver, resolvedName);
                 }
             }
+            else
+            {
+                // Godot adaptation: asset not found in library → fall back to filesystem.
+                // In AS3 all images were embedded in skin SWFs and always in the library.
+                // In Godot some assets (e.g. bottom_bar_navigator) live on disk but are not
+                // registered in any loaded manifest; load them directly from assets/images/.
+                Image? fallbackImage = HabboAssetResolver.LoadImageAsset(resolvedName);
+                if (fallbackImage != null)
+                {
+                    BitmapDataAsset fallbackAsset = new(null);
+                    fallbackAsset.SetUnknownContent(fallbackImage);
+                    receiver.ReceiveAsset(fallbackAsset, resolvedName);
+                }
+            }
 
             return;
         }
@@ -187,7 +201,10 @@ public class ResourceManager : IResourceManager
     /// @see ResourceManager.as::resolveAssetName
     private string? ResolveAssetName(string param1)
     {
-        return _windowManager?.Interpolate(param1);
+        string? interpolated = _windowManager?.Interpolate(param1);
+        // Godot adaptation: if interpolation yields empty (config not ready or unknown key),
+        // fall back to the raw URI so static_bitmap assets like "bottom_bar_navigator" still resolve.
+        return string.IsNullOrEmpty(interpolated) ? param1 : interpolated;
     }
 
     /// @see ResourceManager.as::removeAsset

@@ -1029,12 +1029,14 @@ public class HabboWindowManagerComponent : Component, IHabboWindowManager, IInpu
                 ?? assetLib.GetAssetByName("habbo_element_description_xml");
 
             if (elementDescAsset is null)
+            {
                 throw new InvalidOperationException(
                     "Required asset 'habbo_element_description_xml' is missing.");
+            }
 
             XElement elementDescXml = (elementDescAsset.Content as XElement)
-                ?? throw new InvalidOperationException(
-                    "Asset 'habbo_element_description_xml' has no XML content.");
+                                      ?? throw new InvalidOperationException(
+                                          "Asset 'habbo_element_description_xml' has no XML content.");
 
             SkinParserUtil.Parse(elementDescXml, assetLib, (SkinContainer)_skinContainer);
 

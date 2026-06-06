@@ -1,7 +1,7 @@
 ﻿namespace Vortex.Habbo.Toolbar;
 
 /// @see com.sulake.habbo.toolbar.class_3571
-public class class_3571
+public class ExtensionFixedSlotsEnum
 {
     public const int SLOT_LOGOUTTOOLS = 0;
 
@@ -32,9 +32,4 @@ public class class_3571
     public const int SLOT_PHONE_NUMBER = 12;
 
     public const int SLOT_TARGETED_OFFER = 13;
-
-    /// @see com.sulake.habbo.toolbar.class_3571::class_3571
-    public class_3571()
-    {
-    }
 }

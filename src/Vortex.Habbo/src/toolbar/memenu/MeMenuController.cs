@@ -1,4 +1,4 @@
-// @see WIN63-202407091256-704579380-Source-main/habbo/toolbar/memenu/MeMenuNewController.as
+// @see com.sulake.habbo.toolbar.memenu.MeMenuController
 
 using System;
 using System.Xml.Linq;
@@ -12,98 +12,58 @@ using Vortex.Habbo.Window.Utils;
 
 namespace Vortex.Habbo.Toolbar.MeMenu;
 
-/// @see WIN63-202407091256-704579380-Source-main/habbo/toolbar/memenu/MeMenuNewController.as
-public class MeMenuNewController
+/// @see com.sulake.habbo.toolbar.memenu.MeMenuController (legacy toolbar system)
+public class MeMenuController
 {
-    // @see MeMenuNewController.as::windowProcedure — hover text colours
     private const uint TEXT_COLOR_HOVER = 0x21D474;
     private const uint TEXT_COLOR_OUT = 0xFFFFFF;
 
     private HabboToolbar? _toolbar;
-    private readonly BottomBarLeft _bottomBar;
+    private ToolbarView? _toolbarView;
     private IWindowContainer? _window;
-    private MeMenuNewIconLoader? _iconLoader;
+    private MeMenuIconLoader? _iconLoader;
     private MeMenuSettingsMenuView? _settingsMenuView;
 
-    // @see MeMenuNewController.as — stored to allow RemoveEventListener on dispose
     private readonly Action<object?> _onToolbarClick;
 
-    // TODO(as3-port): _unseenItemCounters — requires IHabboWindowManager.createUnseenItemCounter (not ported)
-
-    /// @see MeMenuNewController.as::MeMenuNewController
-    public MeMenuNewController(HabboToolbar toolbar, BottomBarLeft bottomBar)
+    /// @see MeMenuController.as::MeMenuController
+    public MeMenuController(HabboToolbar toolbar, ToolbarView toolbarView)
     {
         _toolbar = toolbar;
-        _bottomBar = bottomBar;
+        _toolbarView = toolbarView;
 
-        _iconLoader = new MeMenuNewIconLoader(toolbar);
+        _iconLoader = new MeMenuIconLoader(toolbar);
+
         _onToolbarClick = OnToolbarClick;
         toolbar.events?.AddEventListener(HabboToolbarEvent.TOOLBAR_CLICK, _onToolbarClick);
 
-        XmlAsset? xmlAsset = (toolbar.assets as IAssetLibrary)?.GetAssetByName("me_menu_new_view_xml") as XmlAsset;
+        XmlAsset? xmlAsset = (toolbar.assets as IAssetLibrary)?.GetAssetByName("me_menu_view_xml") as XmlAsset;
         XElement? layoutXml = xmlAsset?.Content as XElement
-            ?? HabboAssetResolver.LoadXmlAsset("me_menu_new_view_xml"); // Godot adaptation
+            ?? HabboAssetResolver.LoadXmlAsset("me_menu_view_xml");
 
         if (layoutXml == null)
         {
-            throw new InvalidOperationException("MeMenuNewController: me_menu_new_view_xml not found");
+            throw new InvalidOperationException("MeMenuController: me_menu_view_xml not found");
         }
 
         _window = toolbar.WindowManager?.BuildFromXml(layoutXml, 2) as IWindowContainer;
 
         if (_window == null)
         {
-            throw new InvalidOperationException("MeMenuNewController: failed to build me_menu_new_view window");
+            throw new InvalidOperationException("MeMenuController: failed to build me_menu_view window");
         }
-
-        // @see MeMenuNewController.as — hide guide if guides not enabled
-        if (!toolbar.GetBoolean("guides.enabled"))
-        {
-            SetGuideToolVisibility(false);
-        }
-
-        // @see MeMenuNewController.as — hide collectibles if not enabled
-        if (!toolbar.GetBoolean("classic.collectibles.hub.enabled") || !toolbar.GetBoolean("collectibles.hub.enabled"))
-        {
-            SetCollectiblesVisibility(false);
-        }
-
-        SetMinimailVisibility(false);
 
         _window.visible = false;
         _window.procedure = WindowProcedure;
     }
 
-    /// @see MeMenuNewController.as::get disposed
+    /// @see MeMenuController.as::get disposed
     public bool disposed => _toolbar == null;
 
-    /// @see MeMenuNewController.as::get window
+    /// @see MeMenuController.as::get window
     public IWindowContainer? window => _window;
 
-    // --- Unseen count setters ---
-
-    /// @see MeMenuNewController.as::set unseenAchievementsCount
-    public int unseenAchievementsCount
-    {
-        // TODO(as3-port): update counter badge once createUnseenItemCounter is ported
-        set => _ = value;
-    }
-
-    /// @see MeMenuNewController.as::set unseenMinimailsCount
-    public int unseenMinimailsCount
-    {
-        // TODO(as3-port): update counter badge once createUnseenItemCounter is ported
-        set => _ = value;
-    }
-
-    /// @see MeMenuNewController.as::set unseenForumsCount
-    public int unseenForumsCount
-    {
-        // TODO(as3-port): update counter badge once createUnseenItemCounter is ported
-        set => _ = value;
-    }
-
-    /// @see MeMenuNewController.as::dispose
+    /// @see MeMenuController.as::dispose
     public void Dispose()
     {
         if (disposed)
@@ -126,9 +86,10 @@ public class MeMenuNewController
         }
 
         _toolbar = null;
+        _toolbarView = null;
     }
 
-    /// @see MeMenuNewController.as::toggleVisibility
+    /// @see MeMenuController.as::toggleVisibility
     public void ToggleVisibility()
     {
         if (_window == null || disposed)
@@ -140,48 +101,34 @@ public class MeMenuNewController
 
         if (_window.visible)
         {
-            // @see MeMenuNewController.as — hide talents if talent track not enabled
-            if (_toolbar != null && !_toolbar.GetBoolean("talent.track.enabled"))
-            {
-                IWindow? talents = _window.FindChildByName("talents");
-                if (talents != null)
-                {
-                    talents.visible = false;
-                }
-            }
-
-            // @see MeMenuNewController.as — guide visible only when perk allowed
+            // @see MeMenuController.as — guide visible only when perk allowed
             if (_toolbar != null && _toolbar.GetBoolean("guides.enabled"))
             {
                 bool guideAllowed = _toolbar.sessionDataManager?.IsPerkAllowed("USE_GUIDE_TOOL") ?? false;
                 SetGuideToolVisibility(guideAllowed);
             }
-        }
 
-        Reposition();
+            Reposition();
+        }
     }
 
-    /// @see MeMenuNewController.as::reposition
+    /// @see MeMenuController.as::reposition
     public void Reposition()
     {
-        if (_window == null || _bottomBar.window == null)
+        if (_window == null || _toolbarView?.window == null)
         {
             return;
         }
 
-        // @see MeMenuNewController.as::reposition — attach to toolbar parent when first shown
-        if (_window.parent == null && _bottomBar.window.parent != null)
+        if (_window.parent == null && _toolbarView.window.parent != null)
         {
-            _bottomBar.window.parent.AddChild(_window);
+            _toolbarView.window.parent.AddChild(_window);
         }
 
         _window.x = 3;
-        _window.y = _bottomBar.window.y - _window.height;
+        _window.y = _toolbarView.window.y - _window.height;
     }
 
-    // --- Private helpers ---
-
-    /// @see MeMenuNewController.as::windowProcedure — hover/click for menu item regions
     private void WindowProcedure(WindowEvent ev, IWindow window)
     {
         if (window is not IRegionWindow)
@@ -190,7 +137,6 @@ public class MeMenuNewController
         }
 
         string name = window.name ?? string.Empty;
-        // @see MeMenuNewController.as::windowProcedure — icon_color and icon_grey are IWindow children
         IWindow? colorIcon = window.FindChildByName(name + "_icon_color");
         IWindow? greyIcon = window.FindChildByName(name + "_icon_grey");
         ITextWindow? textField = window.FindChildByName("field_text") as ITextWindow;
@@ -226,12 +172,12 @@ public class MeMenuNewController
                 {
                     _window.visible = false;
                 }
+
                 HandleMenuClick(name);
                 break;
         }
     }
 
-    /// @see MeMenuNewController.as::windowProcedure — dispatch per-item click actions
     private void HandleMenuClick(string itemName)
     {
         if (_toolbar == null)
@@ -248,9 +194,6 @@ public class MeMenuNewController
                     _ = _toolbar.sessionDataManager.userId;
                 }
                 break;
-            case "minimail":
-                // TODO(as3-port): HabboWebTools.openMinimail — not ported
-                break;
             case "rooms":
                 // TODO(as3-port): IHabboNavigator.showOwnRooms — not ported
                 break;
@@ -262,11 +205,11 @@ public class MeMenuNewController
                 }
                 break;
             case "settings":
-                if (_settingsMenuView == null && _toolbar != null)
+                if (_settingsMenuView == null)
                 {
                     _settingsMenuView = new MeMenuSettingsMenuView(_toolbar);
                 }
-                _settingsMenuView?.ToggleVisibility();
+                _settingsMenuView.ToggleVisibility();
                 break;
             case "achievements":
                 // TODO(as3-port): IHabboQuestEngine.showAchievements — not ported
@@ -277,16 +220,9 @@ public class MeMenuNewController
             case "clothes":
                 _toolbar.context?.CreateLinkEvent("avatareditor/open");
                 break;
-            case "forums":
-                _toolbar.context?.CreateLinkEvent("groupforum/list/my");
-                break;
-            case "collectibles":
-                _toolbar.context?.CreateLinkEvent("collectibles/open");
-                break;
         }
     }
 
-    /// @see MeMenuNewController.as — react to toolbar icon click events
     private void OnToolbarClick(object? param1)
     {
         if (param1 is not HabboToolbarEvent ev)
@@ -304,7 +240,6 @@ public class MeMenuNewController
         }
     }
 
-    /// @see MeMenuNewController.as::setGuideToolVisibility
     private void SetGuideToolVisibility(bool visible)
     {
         if (_window == null)
@@ -320,7 +255,6 @@ public class MeMenuNewController
             guide.visible = visible;
         }
 
-        // @see MeMenuNewController.as — resize window height to trim/show guide row
         if (achievements != null)
         {
             IWindow? anchor = visible ? guide : achievements;
@@ -328,26 +262,6 @@ public class MeMenuNewController
             {
                 _window.height = anchor.y + anchor.height + 5;
             }
-        }
-    }
-
-    /// @see MeMenuNewController.as::setCollectiblesVisibility
-    private void SetCollectiblesVisibility(bool visible)
-    {
-        IWindow? collectibles = _window?.FindChildByName("collectibles");
-        if (collectibles != null)
-        {
-            collectibles.visible = visible;
-        }
-    }
-
-    /// @see MeMenuNewController.as::setMinimailVisibility
-    private void SetMinimailVisibility(bool visible)
-    {
-        IWindow? minimail = _window?.FindChildByName("minimail");
-        if (minimail != null)
-        {
-            minimail.visible = visible;
         }
     }
 }

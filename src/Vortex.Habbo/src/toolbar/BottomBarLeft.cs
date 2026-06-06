@@ -341,8 +341,8 @@ public class BottomBarLeft : ILinkEventTracker
             else if (name == "CAMERA")
             {
                 string camPos = _toolbar.GetProperty("camera.launch.ui.position");
-                // TODO(as3-port): ISessionDataManager.isPerkAllowed("CAMERA") — not ported yet
-                toggle.visible = inRoom && camPos == "bottom-icons";
+                bool cameraAllowed = _toolbar.sessionDataManager?.IsPerkAllowed("CAMERA") ?? false;
+                toggle.visible = inRoom && camPos == "bottom-icons" && cameraAllowed;
             }
             else if (name == "WIRED_MENU")
             {

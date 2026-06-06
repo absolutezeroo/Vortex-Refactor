@@ -8,7 +8,10 @@ using Vortex.Core.Runtime;
 using Vortex.Core.Window;
 using Vortex.Core.Window.Components;
 using Vortex.Core.Window.Events;
+using Vortex.Habbo.Avatar;
 using Vortex.Habbo.Communication;
+using Vortex.Habbo.Localization;
+using Vortex.Habbo.Session;
 using Vortex.Habbo.Toolbar.Events;
 using Vortex.Habbo.Window;
 using Vortex.IID;
@@ -20,16 +23,28 @@ public class HabboToolbar : Component, IHabboToolbar
 {
     private IHabboCommunicationManager? _communication;
     private IHabboWindowManager? _windowManager;
+    private IAvatarRenderManager? _avatarRenderManager;
+    private ISessionDataManager? _sessionDataManager;
+    private IHabboLocalizationManager? _localizationManager;
 
     /// @see HabboToolbar.as::get windowManager
     public IHabboWindowManager? WindowManager => _windowManager;
 
-    // TODO(as3-port): IHabboLocalizationManager — not ported yet
+    /// @see HabboToolbar.as::get communication
+    public IHabboCommunicationManager? communication => _communication;
+
+    /// @see HabboToolbar.as::get avatarRenderManager
+    public IAvatarRenderManager? avatarRenderManager => _avatarRenderManager;
+
+    /// @see HabboToolbar.as::get sessionDataManager
+    public ISessionDataManager? sessionDataManager => _sessionDataManager;
+
+    /// @see HabboToolbar.as::get localizationManager
+    public IHabboLocalizationManager? localizationManager => _localizationManager;
+
     // TODO(as3-port): IHabboCatalog — not ported yet
     // TODO(as3-port): IHabboInventory — not ported yet
     // TODO(as3-port): IHabboNavigator / IHabboNewNavigator — not ported yet
-    // TODO(as3-port): IAvatarRenderManager — optional wiring
-    // TODO(as3-port): ISessionDataManager — optional wiring
     // TODO(as3-port): IHabboHelp — not ported yet
     // TODO(as3-port): IHabboMessenger — not ported yet
     // TODO(as3-port): IHabboQuestEngine — not ported yet
@@ -43,11 +58,15 @@ public class HabboToolbar : Component, IHabboToolbar
     private const int TOOLBAR_EXTENSION_MARGIN = 150;
     private const int COLLAPSED_MARGIN = 185;
 
-    private int _currentState = HabboToolbarEnum.TOOLBAR_STATE_HOTEL_VIEW;
+    // @see HabboToolbar.as — AS3 int fields default to 0 but the guard is `if (_currentState == state) return`.
+    // Initialize to -1 so the first SetToolbarState(HOTEL_VIEW=0) actually runs and applies tag-based icon filtering.
+    private int _currentState = -1;
     private readonly Dictionary<int, bool> _iconVisibility = new();
     private bool _onDuty;
 
     private BottomBarLeft? _bottomBarLeft;
+    private ExtensionView? _extensionView;
+    private IWindowContainer? _dimmerWindow;
     private IWindowContainer? toolbarWindow => _bottomBarLeft?.window;
     private IDesktopWindow? _desktopWindow;
 
@@ -66,14 +85,14 @@ public class HabboToolbar : Component, IHabboToolbar
             new(new IIDHabboWindowManager(), p =>
             {
                 _windowManager = p as IHabboWindowManager;
-                // InitComponent may have already run before the window manager was resolved (optional dep);
-                // create the toolbar view now if that's the case.
                 if (!locked && _bottomBarLeft == null)
                 {
                     CreateToolbarView();
                 }
             }, false),
-            // TODO(as3-port): Add optional deps when their IIDs are ported
+            new(new IIDAvatarRenderManager(), p => _avatarRenderManager = p as IAvatarRenderManager, false),
+            new(new IIDSessionDataManager(), p => _sessionDataManager = p as ISessionDataManager, false),
+            new(new IIDHabboLocalizationManager(), p => _localizationManager = p as IHabboLocalizationManager, false),
         };
 
     /// @see com.sulake.habbo.toolbar.HabboToolbar::initComponent
@@ -97,6 +116,15 @@ public class HabboToolbar : Component, IHabboToolbar
             _bottomBarLeft = null;
         }
 
+        if (_extensionView != null)
+        {
+            _extensionView.Dispose();
+            _extensionView = null;
+        }
+
+        _dimmerWindow?.Destroy();
+        _dimmerWindow = null;
+
         if (_desktopWindow != null)
         {
             _desktopWindow.RemoveEventListener(WindowEvent.WE_RESIZED, OnDesktopResized);
@@ -108,6 +136,9 @@ public class HabboToolbar : Component, IHabboToolbar
     }
 
     // --- IHabboToolbar ---
+
+    /// @see HabboToolbar.as::get extensionView
+    public IExtensionView? extensionView => _extensionView;
 
     /// @see IHabboToolbar.as::get toolBarAreaWidth
     public int toolBarAreaWidth
@@ -237,6 +268,44 @@ public class HabboToolbar : Component, IHabboToolbar
             : Vector2I.Zero;
     }
 
+    /// @see HabboToolbar.as::createAndAttachDimmerWindow
+    public void CreateAndAttachDimmerWindow()
+    {
+        if (_dimmerWindow != null || _windowManager == null || _extensionView == null)
+        {
+            return;
+        }
+
+        Core.Assets.XmlAsset? xmlAsset = (assets as Core.Assets.IAssetLibrary)?.GetAssetByName("toolbar_dimmer_xml") as Core.Assets.XmlAsset;
+        System.Xml.Linq.XElement? layoutXml = xmlAsset?.Content as System.Xml.Linq.XElement
+            ?? Window.Utils.HabboAssetResolver.LoadXmlAsset("toolbar_dimmer_xml");
+
+        if (layoutXml == null)
+        {
+            return;
+        }
+
+        _dimmerWindow = _windowManager.BuildFromXml(layoutXml) as IWindowContainer;
+
+        if (_dimmerWindow != null)
+        {
+            _extensionView.AttachExtension(ToolbarDisplayExtensionIds.const_1069, _dimmerWindow);
+        }
+    }
+
+    /// @see HabboToolbar.as::removeDimmer
+    public void RemoveDimmer()
+    {
+        if (_dimmerWindow == null)
+        {
+            return;
+        }
+
+        _extensionView?.DetachExtension(ToolbarDisplayExtensionIds.const_1069);
+        _dimmerWindow.Destroy();
+        _dimmerWindow = null;
+    }
+
     // --- Private helpers ---
 
     /// @see com.sulake.habbo.toolbar.HabboToolbar::initComponent — delegates to BottomBarLeft
@@ -258,6 +327,8 @@ public class HabboToolbar : Component, IHabboToolbar
         {
             toolbarWindow.procedure = OnToolbarWindowProcedure;
         }
+
+        _extensionView = new ExtensionView(_windowManager, this);
 
         AttachToDesktop();
         SyncAllIconVisibility();

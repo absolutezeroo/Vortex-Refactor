@@ -1,4 +1,8 @@
+// @see com.sulake.core.communication.wireformat.EvaWireFormat (WIN63-202111081545-75921380)
+
 using System;
+using System.Buffers;
+using System.Buffers.Binary;
 using System.IO;
 using System.Text;
 
@@ -18,10 +22,20 @@ public sealed class EvaWireFormat : IWireFormat, IDisposable
 
     public void Dispose() { }
 
+    // @see EvaWireFormat.as::encode
     public byte[] Encode(int param1, List<object> param2)
     {
+        // Build the body (messageId + payload) into a MemoryStream, then prepend the
+        // 4-byte big-endian length. BinaryPrimitives makes the big-endian intent explicit;
+        // stack-allocated Span<byte> avoids per-field heap allocations for the header writes.
         using MemoryStream body = new();
-        WriteInt16Be(body, (short)param1);
+
+        Span<byte> buf2 = stackalloc byte[2];
+        Span<byte> buf4 = stackalloc byte[4];
+        Span<byte> buf8 = stackalloc byte[8];
+
+        BinaryPrimitives.WriteInt16BigEndian(buf2, (short)param1);
+        body.Write(buf2);
 
         foreach (object value in param2)
         {
@@ -29,38 +43,53 @@ public sealed class EvaWireFormat : IWireFormat, IDisposable
             {
                 case string s:
                     byte[] text = Encoding.UTF8.GetBytes(s);
-                    WriteInt16Be(body, (short)text.Length);
-                    body.Write(text, 0, text.Length);
+                    BinaryPrimitives.WriteInt16BigEndian(buf2, (short)text.Length);
+                    body.Write(buf2);
+                    body.Write(text);
                     break;
                 case int i:
-                    WriteInt32Be(body, i);
+                    BinaryPrimitives.WriteInt32BigEndian(buf4, i);
+                    body.Write(buf4);
                     break;
                 case bool b:
                     body.WriteByte((byte)(b ? 1 : 0));
                     break;
                 case Short s:
-                    WriteInt16Be(body, (short)s.value);
+                    BinaryPrimitives.WriteInt16BigEndian(buf2, (short)s.value);
+                    body.Write(buf2);
                     break;
                 case Byte b:
                     body.WriteByte((byte)b.value);
                     break;
                 case Long l:
-                    WriteInt64Be(body, l.value);
+                    BinaryPrimitives.WriteInt64BigEndian(buf8, (long)l.value);
+                    body.Write(buf8);
                     break;
                 case byte[] bytes:
-                    WriteInt32Be(body, bytes.Length);
-                    body.Write(bytes, 0, bytes.Length);
+                    BinaryPrimitives.WriteInt32BigEndian(buf4, bytes.Length);
+                    body.Write(buf4);
+                    body.Write(bytes);
                     break;
             }
         }
 
-        using MemoryStream packet = new();
-        WriteInt32Be(packet, (int)body.Length);
-        byte[] bodyBytes = body.ToArray();
-        packet.Write(bodyBytes, 0, bodyBytes.Length);
-        return packet.ToArray();
+        int bodyLength = (int)body.Length;
+
+        // Rent a packet buffer, write length prefix, copy body — return an exact-length copy.
+        byte[] rented = ArrayPool<byte>.Shared.Rent(4 + bodyLength);
+        try
+        {
+            BinaryPrimitives.WriteInt32BigEndian(rented, bodyLength);
+            body.GetBuffer().AsSpan(0, bodyLength).CopyTo(rented.AsSpan(4));
+            return rented.AsSpan(0, 4 + bodyLength).ToArray();
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(rented);
+        }
     }
 
+    // @see EvaWireFormat.as::splitMessages
     public List<IMessageDataWrapper> SplitMessages(byte[] param1, IConnection param2)
     {
         List<IMessageDataWrapper> result = new();
@@ -73,13 +102,22 @@ public sealed class EvaWireFormat : IWireFormat, IDisposable
 
             encryption?.Mark();
 
-            byte[] lengthBytes = new byte[4];
-            Array.Copy(param1, position, lengthBytes, 0, 4);
-            position += 4;
+            int messageLength;
 
-            encryption?.Decipher(lengthBytes);
+            if (encryption != null)
+            {
+                byte[] lengthBytes = new byte[4];
+                param1.AsSpan(position, 4).CopyTo(lengthBytes);
+                position += 4;
+                encryption.Decipher(lengthBytes);
+                messageLength = BinaryPrimitives.ReadInt32BigEndian(lengthBytes);
+            }
+            else
+            {
+                messageLength = BinaryPrimitives.ReadInt32BigEndian(param1.AsSpan(position, 4));
+                position += 4;
+            }
 
-            int messageLength = ReadInt32Be(lengthBytes, 0);
             if (messageLength < 2 || messageLength > MAX_DATA)
             {
                 throw new Exception("Invalid message length " + messageLength);
@@ -93,26 +131,20 @@ public sealed class EvaWireFormat : IWireFormat, IDisposable
             }
 
             byte[] payloadWithId = new byte[messageLength];
-            Array.Copy(param1, position, payloadWithId, 0, messageLength);
+            param1.AsSpan(position, messageLength).CopyTo(payloadWithId);
             position += messageLength;
 
             encryption?.Decipher(payloadWithId);
 
-            int messageId = ReadInt16Be(payloadWithId, 0);
+            int messageId = BinaryPrimitives.ReadInt16BigEndian(payloadWithId);
             byte[] payload = new byte[messageLength - 2];
-            Array.Copy(payloadWithId, 2, payload, 0, payload.Length);
+            payloadWithId.AsSpan(2, messageLength - 2).CopyTo(payload);
             result.Add(new EvaMessageDataWrapper(messageId, payload));
         }
 
-        if (position < param1.Length)
-        {
-            _remainder = new byte[param1.Length - position];
-            Array.Copy(param1, position, _remainder, 0, _remainder.Length);
-        }
-        else
-        {
-            _remainder = [];
-        }
+        _remainder = position < param1.Length
+            ? param1.AsSpan(position).ToArray()
+            : [];
 
         return result;
     }
@@ -120,40 +152,5 @@ public sealed class EvaWireFormat : IWireFormat, IDisposable
     public byte[] GetRemainder()
     {
         return _remainder;
-    }
-
-    private static void WriteInt16Be(Stream stream, short value)
-    {
-        stream.WriteByte((byte)((value >> 8) & 0xFF));
-        stream.WriteByte((byte)(value & 0xFF));
-    }
-
-    private static void WriteInt32Be(Stream stream, int value)
-    {
-        stream.WriteByte((byte)((value >> 24) & 0xFF));
-        stream.WriteByte((byte)((value >> 16) & 0xFF));
-        stream.WriteByte((byte)((value >> 8) & 0xFF));
-        stream.WriteByte((byte)(value & 0xFF));
-    }
-
-    private static void WriteInt64Be(Stream stream, double value)
-    {
-        long longValue = (long)value;
-        byte[] bytes = BitConverter.GetBytes(longValue);
-        if (BitConverter.IsLittleEndian)
-        {
-            Array.Reverse(bytes);
-        }
-        stream.Write(bytes, 0, bytes.Length);
-    }
-
-    private static int ReadInt16Be(byte[] data, int offset)
-    {
-        return (short)((data[offset] << 8) | data[offset + 1]);
-    }
-
-    private static int ReadInt32Be(byte[] data, int offset)
-    {
-        return (data[offset] << 24) | (data[offset + 1] << 16) | (data[offset + 2] << 8) | data[offset + 3];
     }
 }
